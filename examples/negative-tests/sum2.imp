@@ -1,0 +1,39 @@
+sum2(n, p) 
+[ <#n: int, p: int ref (0, n - 1, 0.5)> -> 
+  <#n: int, p: int ref (0, n - 1, 0.5) | unit> ]
+{
+  if n <= 1 then {
+    ()
+  } else {
+    let m = n/2 in
+    let q = p + m in
+    sum2(m, p);
+    sum2(n - m, q);
+    let r = *p + *q in
+    p := r;
+    ()
+  }
+}
+
+{
+  let p = mkarray 4 in
+  p := 1;
+  let q = p + 1 in
+  q := 2;
+  let r = q + 1 in
+  r := 3;
+  let s = r + 1 in
+  s := 4;
+  alias(s = r + 1);
+  alias(r = q + 1);
+  alias(q = p + 1);
+  sum2(4, p);
+  assert(*p = 10);
+  alias(q = p + 1);
+  assert(*q = 2);
+  alias(r = q + 1);
+  assert(*r = 7);
+  alias(s = r + 1);
+  assert(*s = 4);
+  ()
+}

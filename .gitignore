@@ -10,6 +10,8 @@
 
 # ocamlbuild working directory
 _build/
+._bcdi/
+._d/
 
 # ocamlbuild targets
 *.byte
@@ -27,3 +29,23 @@ setup.log
 
 # Local OPAM switch
 _opam/
+
+.DS_Store
+*.output
+
+result
+result_int
+*.smt2
+
+lexer.ml
+Z3lexer.ml
+Z3lexer2.ml
+
+parser.ml
+parser.mli
+Z3parser.ml
+Z3parser.mli
+Z3parser2.ml
+Z3parser2.mli
+
+main

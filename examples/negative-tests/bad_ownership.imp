@@ -1,0 +1,9 @@
+{
+  let p = mkarray 3 in
+  let q = p + 1 in
+  p := 0;
+  q := 1;
+  let r = p + 2 in
+  r := 2;
+  ()
+}
