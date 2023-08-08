@@ -1,0 +1,112 @@
+open Syntax
+open TySyntax
+open TyConstraintSolver
+open SimpleTyping
+open Convert
+open CollectConstraint
+open Emit
+open Z3Syntax
+open Z3Syntax2
+open CHCcollectConstraint
+open CHCemit
+open Ownership
+
+let main_int n = 
+  let oc_r1 = open_in "../experiment/test.imp" in
+  let prog = Parser.program Lexer.read (Lexing.from_channel oc_r1) in
+  close_in oc_r1;
+  (* print_program prog; print_newline (); print_newline (); *)
+  infer_prog prog;
+  (* print_all_tyenv !all_tyenv; print_newline (); print_newline (); *)
+  let prog' = convert prog in
+  (* print_program prog'; print_newline (); print_newline (); *)
+  let all_cs = collect_prog prog' in 
+  (* print_all_constraints all_cs; print_newline (); print_newline (); *)
+  let (id_count, fvs, sls) = all_cs_to_smtlib all_cs n in
+
+  let oc1 = open_out "../experiment/out_int.smt2" in
+  let oc2 = open_out "../experiment/out_fv_pre.smt2" in
+  print_declare oc1 id_count fvs;
+  output_string oc1 "\n";
+  print_smtlibs oc1 sls false fvs 0; 
+  output_string oc1 "\n";
+  output_string oc1 "(check-sat)\n";
+  output_string oc1 "(get-model)\n";
+
+  print_declare oc2 id_count fvs;
+  output_string oc2 "\n";
+  print_smtlibs oc2 sls true fvs 0; 
+  output_string oc2 "\n";
+  output_string oc2 "(check-sat)\n";
+  output_string oc2 "(get-model)\n";
+
+  close_out oc1; close_out oc2
+
+let main_fv n =
+  let oc_r1 = open_in "../experiment/test.imp" in
+  let oc_r2 = open_in "../experiment/result_int" in
+  let prog = Parser.program Lexer.read (Lexing.from_channel oc_r1) in
+  let z3res = Z3Parser.result Z3Lexer.read (Lexing.from_channel oc_r2) in
+  close_in oc_r1; close_in oc_r2;
+  (* print_program prog; print_newline (); print_newline (); *)
+  infer_prog prog;
+  (* print_all_tyenv !all_tyenv; print_newline (); print_newline (); *)
+  let prog' = convert prog in
+  (* print_program prog'; print_newline (); print_newline (); *)
+  let all_cs = collect_prog prog' in 
+  (* print_all_constraints all_cs; print_newline (); print_newline (); *)
+  let (id_count, fvs, sls) = all_cs_to_smtlib all_cs n in
+  
+  let oc = open_out "../experiment/out_fv.smt2" in
+  print_declare oc id_count fvs;
+  output_string oc "\n";
+  print_z3result oc z3res;
+  output_string oc "\n";
+  print_smtlibs oc sls true fvs 0; 
+  output_string oc "\n";
+  output_string oc "(check-sat)\n";
+  output_string oc "(get-model)\n";
+
+  close_out oc
+
+let main_chc n = 
+  let oc_r1 = open_in "../experiment/test.imp" in
+  let oc_r2 = open_in "../experiment/result" in
+  let prog = Parser.program Lexer.read (Lexing.from_channel oc_r1) in
+  let z3res = Z3Parser2.result Z3Lexer2.read (Lexing.from_channel oc_r2) in
+  (* print_ownerships stdout z3res; *)
+  close_in oc_r1; close_in oc_r2;
+  (* print_program prog; print_newline (); print_newline (); *)
+  infer_prog prog;
+  (* print_all_tyenv !all_tyenv; print_newline (); print_newline (); *)
+  let prog' = convert prog in
+  (* print_program prog'; print_newline (); print_newline (); *)
+  let all_chcs = chc_collect_prog prog' in 
+  (* print_all_chcs all_chcs; print_newline (); print_newline (); *)
+  (* List.iter (fun (id, ann) -> print_string id; print_string ": "; print_annotation ann; print_newline ()) !fn_env_chc; *)
+  let (id_count, fvs, sls) = all_cs_to_smtlib_chc all_chcs n in
+
+  let own_sls = collect_ownchc z3res in 
+
+  let oc = open_out "../experiment/out_chc.smt2" in
+  output_string oc "(set-logic HORN)\n\n";
+  print_declare_chc oc id_count n;
+  output_string oc "\n";
+  print_smtlibs oc sls true fvs n; 
+  output_string oc "\n";
+  print_smtlibs oc own_sls true fvs n; 
+  output_string oc "\n";
+  output_string oc "(check-sat)\n";
+  (* output_string oc "(get-model)\n"; *)
+
+  close_out oc
+
+
+let _ = 
+  let input1 = Sys.argv.(1) in
+  let input2 = Sys.argv.(2) in
+  match input1 with
+  | "int" -> main_int (int_of_string input2)
+  | "fv" -> main_fv (int_of_string input2)
+  | "chc" -> main_chc (int_of_string input2)
+  | _ -> ()
