@@ -1,0 +1,30 @@
+sum(n, p) 
+[ <#n: int, p: { v : int | (=> (and (>= i 0) (<= i (- n 1))) (>= v 0)) } ref (0, n - 1, 0.5)> -> 
+  <#n: int, p: int ref (0, n - 1, 0.) | int > ]
+{
+  if n <= 0 then {
+    0
+  } else {
+    let x = *p in
+    let q = p + 1 in
+    let m = n - 1 in
+    let s = sum(m, q) in
+    let y = x + s in
+    y
+  }
+}
+
+{
+  let p = mkarray 3 in
+  p := 4;
+  let q = p + 1 in
+  q := 5;
+  let r = q + 1 in
+  r := 6;
+  alias(r = q + 1);
+  alias(q = p + 1);
+  let m = 3 in
+  let x = sum(m, p) in
+  assert(x >= 0);
+  ()
+}

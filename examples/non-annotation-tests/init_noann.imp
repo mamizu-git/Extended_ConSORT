@@ -1,0 +1,40 @@
+init(n, p) 
+[ <#n: int, p: int ref (0, n - 1, 1.0)> -> 
+  <#n: int, p: int ref (0, n - 1, 1.0) | int > ]
+{
+  if n <= 0 then {
+    0
+  } else {
+    p := 0;
+    let q = p + 1 in
+    let m = n - 1 in
+    let d = init(m, q) in
+    alias(q = p + 1);
+    0
+  }
+}
+
+{
+  let p = mkarray 3 in
+  p := 1;
+  let q = p + 1 in
+  q := 1;
+  let r = q + 1 in
+  r := 1;
+  alias(r = q + 1);
+  alias(q = p + 1);
+  let m = 2 in
+  let p1 = p in
+  alias(p1 = p);
+  let d = init(m, p) in
+  alias(p1 = p);
+  let pp = *p in
+  assert(pp = 0);
+  alias(q = p + 1);
+  let qq = *q in
+  assert(qq = 0);
+  alias(r = q + 1);
+  let rr = *r in
+  assert(rr = 1);
+  ()
+}
