@@ -88,7 +88,7 @@ let collect_prog prog =
   let (fdefs, e) = prog in
   let ics = List.map collect_fdef fdefs in
   fn_env := ("main", ([], [])) :: !fn_env;
-  let ic = ("main", collect_exp [] "main" [] 0 e) in
+  let ic = ("main", collect_exp [] "main" [] 1 e) in
   let all_cs = ic :: ics in
   all_cs
 

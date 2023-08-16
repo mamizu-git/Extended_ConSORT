@@ -87,13 +87,6 @@ fdef:
   id LPAREN ids RPAREN LBRACKET annotation RBRACKET LBRACE exp RBRACE { ($1, $3, $6, $9) }
 ;
 
-ids:
-| id 
-  { [$1] }
-| id COMMA ids 
-  { $1 :: $3 }
-;
-
 annotation:
   LTHAN id_ftypes GTHAN ARROW LTHAN id_ftypes BAR ftype GTHAN { ($2, $6, $8) }
 ;
@@ -117,6 +110,8 @@ ftype:
   { FTInt($6) }
 | ftype REF LPAREN exp COMMA exp COMMA float RPAREN
   { FTRef($1, $4, $6, $8) }
+| TINT
+  { FTInt(VarPred) }
 ;
 
 smtlib:
@@ -146,6 +141,8 @@ smtlib:
   { Mul($3, $4) } 
 | LPAREN DIV smtlib smtlib RPAREN
   { Div($3, $4) } 
+| LBRACKET id LPAREN ids RPAREN RBRACKET
+  { IntPred($2, $4) }
 | TOP
   { Id("true") }
 | NU
@@ -234,6 +231,16 @@ float:
   FLOAT { $1 }
 ;
 
+ids:
+| id
+  { [$1] }
+| id COMMA ids
+  { $1 :: $3 }
+
 id:
-  ID { $1 }
+| ID 
+  { $1 }
+| NU
+  { "v" }
+
 ;

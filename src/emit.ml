@@ -279,7 +279,7 @@ let ics_to_smtlib ics =
   let (ftid_fts1, ftid_fts2) = lookup id !fn_env in
   let fvs = List.concat (List.map find_fv ftid_fts1) in
   let ref_ids = List.concat (List.map find_ref_id ftid_fts1) in
-  id_count := List.map (fun id -> (id, 0)) ref_ids;
+  id_count := List.map (fun id -> (id, 1)) ref_ids;
   let g1 id = 
     let (el1,eh1,f1) = assoc_ft id ftid_fts1 in 
     [Eq(o id, Id (string_of_float f1));

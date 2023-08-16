@@ -33,8 +33,7 @@ _opam/
 .DS_Store
 *.output
 
-result
-result_int
+result*
 *.smt2
 
 lexer.ml

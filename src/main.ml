@@ -69,13 +69,31 @@ let main_fv n =
 
   close_out oc
 
-let main_chc n = 
+let rec main_chc_sub oc all_chcs n = 
+  if n < 0 then 
+    ()
+  else
+    (let oc_r2 = open_in @@ "../experiment/result_" ^ (string_of_int n) in
+    let z3res = Z3Parser2.result Z3Lexer2.read (Lexing.from_channel oc_r2) in
+    (* print_ownerships stdout z3res; *)
+    close_in oc_r2;
+    
+    let (id_count, varpred_count, fvs, sls) = all_cs_to_smtlib_chc all_chcs n in
+    let args_own_sls = ownexp_to_ownchc varpred_count n in
+    let own_sls = collect_ownchc z3res in 
+
+    print_declare_chc oc id_count varpred_count n;
+    print_smtlibs oc sls true fvs n; 
+    print_smtlibs oc args_own_sls true fvs n; 
+    print_smtlibs oc own_sls true fvs n; 
+    output_string oc "\n\n";
+    main_chc_sub oc all_chcs (n-1))
+
+let main_chc n =
   let oc_r1 = open_in "../experiment/test.imp" in
-  let oc_r2 = open_in "../experiment/result" in
   let prog = Parser.program Lexer.read (Lexing.from_channel oc_r1) in
-  let z3res = Z3Parser2.result Z3Lexer2.read (Lexing.from_channel oc_r2) in
-  (* print_ownerships stdout z3res; *)
-  close_in oc_r1; close_in oc_r2;
+  close_in oc_r1; 
+
   (* print_program prog; print_newline (); print_newline (); *)
   infer_prog prog;
   (* print_all_tyenv !all_tyenv; print_newline (); print_newline (); *)
@@ -84,22 +102,12 @@ let main_chc n =
   let all_chcs = chc_collect_prog prog' in 
   (* print_all_chcs all_chcs; print_newline (); print_newline (); *)
   (* List.iter (fun (id, ann) -> print_string id; print_string ": "; print_annotation ann; print_newline ()) !fn_env_chc; *)
-  let (id_count, fvs, sls) = all_cs_to_smtlib_chc all_chcs n in
-
-  let own_sls = collect_ownchc z3res in 
 
   let oc = open_out "../experiment/out_chc.smt2" in
-  output_string oc "(set-logic HORN)\n\n";
-  print_declare_chc oc id_count n;
-  output_string oc "\n";
-  print_smtlibs oc sls true fvs n; 
-  output_string oc "\n";
-  print_smtlibs oc own_sls true fvs n; 
-  output_string oc "\n";
+  output_string oc "(set-logic HORN)\n\n\n";
+  main_chc_sub oc all_chcs n;
   output_string oc "(check-sat)\n";
-  (* output_string oc "(get-model)\n"; *)
-
-  close_out oc
+  output_string oc "(get-model)\n"
 
 
 let _ = 

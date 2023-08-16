@@ -1,0 +1,139 @@
+sat
+(model
+  (define-fun P1_ret
+    ( (v_0 Int) ) Bool
+    (>= v_0 0)
+  )
+  (define-fun P1_p_1
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    true
+  )
+  (define-fun P2_p_e
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    true
+  )
+  (define-fun P2_p_1
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    true
+  )
+  (define-fun P2_p_6
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    (P2_p_e v_0 v_1 v_2)
+  )
+  (define-fun P0_p_1
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    true
+  )
+  (define-fun P0_m
+    ( (v_0 Int) ) Bool
+    (= (+ v_0 (- 3)) 0)
+  )
+  (define-fun P0_z
+    ( (v_0 Int) ) Bool
+    (= (+ v_0 (- 1)) 0)
+  )
+  (define-fun P0_d
+    ( (v_0 Int) ) Bool
+    true
+  )
+  (define-fun P0_p_4
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    (P1_p_1 v_0 v_1 3)
+  )
+  (define-fun P0_x
+    ( (v_0 Int) ) Bool
+    (P1_ret v_0)
+  )
+  (define-fun P0_p_5
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    true
+  )
+  (define-fun P1_p_b
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    (P1_p_1 v_0 v_1 v_2)
+  )
+  (define-fun P1_p_e
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    true
+  )
+  (define-fun P1_n
+    ( (v_0 Int) ) Bool
+    true
+  )
+  (define-fun P1_x
+    ( (v_0 Int) ) Bool
+    (exists ( (v_1 Int) ) (and (>= v_1 1) (P1_p_1 0 v_0 v_1)))
+  )
+  (define-fun P1_w
+    ( (v_0 Int) ) Bool
+    (exists ( (v_1 Int) ) (and (= (+ v_0 (* (- 1) (* v_1 v_1))) 0) (P1_x v_1)))
+  )
+  (define-fun P1_q_4
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    (or (>= (* (- 1) v_2) 0) (P1_p_b v_0 v_1 (+ v_2 (- 1))))
+  )
+  (define-fun P1_p_4
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    true
+  )
+  (define-fun P1_m
+    ( (v_0 Int) (v_1 Int) ) Bool
+    (and (= (+ v_0 1 (* (- 1) v_1)) 0) (>= v_1 1))
+  )
+  (define-fun P1_r
+    ( (v_0 Int) ) Bool
+    (P1_ret v_0)
+  )
+  (define-fun P1_q_6
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    true
+  )
+  (define-fun P1_z
+    ( (v_0 Int) ) Bool
+    (P1_ret v_0)
+  )
+  (define-fun P2_p_b
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    (P2_p_1 v_0 v_1 v_2)
+  )
+  (define-fun P2_ret
+    ( (v_0 Int) ) Bool
+    true
+  )
+  (define-fun P2_x
+    ( (v_0 Int) ) Bool
+    (P0_z v_0)
+  )
+  (define-fun P2_n
+    ( (v_0 Int) ) Bool
+    true
+  )
+  (define-fun P2_p_2
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    (or (and (= v_0 0) (= (+ v_1 (- 1)) 0) (>= v_2 1)) (and (not (= v_0 0)) (>= v_2 1) (P2_p_1 v_0 v_1 v_2)) (and (= (+ v_1 (- 1)) 0) (>= v_2 1) (P2_p_1 v_0 1 v_2)))
+  )
+  (define-fun P2_q_3
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    (or (>= (* (- 1) v_2) 0) (P2_p_b v_0 v_1 (+ v_2 (- 1))))
+  )
+  (define-fun P2_p_3
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    (or (and (= v_0 0) (= (+ v_1 (- 1)) 0) (>= v_2 1)) (and (not (= v_0 0)) (>= v_2 1) (P2_p_1 v_0 v_1 v_2)) (and (= (+ v_1 (- 1)) 0) (>= v_2 1) (P2_p_1 v_0 1 v_2)) (>= v_0 1) (>= (* (- 1) v_0) 1))
+  )
+  (define-fun P2_m
+    ( (v_0 Int) (v_1 Int) ) Bool
+    (and (= (+ v_0 1 (* (- 1) v_1)) 0) (>= v_1 1))
+  )
+  (define-fun P2_d
+    ( (v_0 Int) ) Bool
+    true
+  )
+  (define-fun P2_q_5
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    (or (>= (* (- 1) v_2) 0) (P2_p_e (+ v_0 1) v_1 v_2) (not (P2_p_3 (+ v_0 1) v_1 v_2)))
+  )
+  (define-fun P2_q_6
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    true
+  )
+)

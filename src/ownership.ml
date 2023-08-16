@@ -1,5 +1,6 @@
 open Z3Syntax2
 open Syntax
+open Elim
 
 let rec get_id ownerships = 
   match ownerships with
@@ -62,3 +63,19 @@ let collect_ownchc ownerships =
   let ids = get_id ownerships in
   List.concat (List.map (fun (id,i) -> own_to_chc (id,i) (Id "0") (Id "0") (find_id (id,i) ownerships)) ids)
 
+
+let g num (sl, (el,eh,f)) = 
+  match sl with
+  | PtrVarPred(num',_,_,_,_) when num' = num ->
+    if f = 0. then
+      [Imply(Id "true", sl)]
+    else 
+      let sll = exp_to_smtlib el in
+      let slh = exp_to_smtlib eh in
+      [Imply(Gt(Id "i", slh), sl);
+       Imply(Lt(Id "i", sll), sl)]
+  | _ -> []
+
+
+let ownexp_to_ownchc varpred_count num =
+  List.concat (List.map (g num) (list_to_set varpred_count []))
