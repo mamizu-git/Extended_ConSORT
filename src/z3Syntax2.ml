@@ -7,11 +7,11 @@ type value =
   | Float of float
 
 type ownership = 
-  | Own   of id * int * value
-  | CHigh of id * id * int * value
-  | CLow  of id * id * int * value
-  | DHigh of id * int * value
-  | DLow  of id * int * value
+  | Own   of int * id * int * value
+  | CHigh of int * id * id * int * value
+  | CLow  of int * id * id * int * value
+  | DHigh of int * id * int * value
+  | DLow  of int * id * int * value
 
 type result = ownership list
 
@@ -19,28 +19,28 @@ let rec print_ownerships oc ownerships =
   List.iter (print_ownership oc) ownerships
 and print_ownership oc ownership = 
   match ownership with
-  | Own (id,i,Float f) ->
-    (output_string oc "Own of ";
+  | Own (num,id,i,Float f) ->
+    (output_string oc ("Own" ^ (string_of_int num) ^ " of ");
      output_string oc (id ^ "_" ^ (string_of_int i) ^ ": ");
      output_string oc (string_of_float f);
      output_string oc "\n")
-  | CHigh (id1,id2,i1,Int i2) ->
-    (output_string oc "CHigh of ";
+  | CHigh (num,id1,id2,i1,Int i2) ->
+    (output_string oc ("C" ^ (string_of_int num) ^ "High of ");
      output_string oc (id1 ^ "_" ^ id2 ^ "_" ^ (string_of_int i1) ^ ": ");
      output_string oc (string_of_int i2);
      output_string oc "\n")
-  | CLow (id1,id2,i1,Int i2) ->
-    (output_string oc "CLow of ";
+  | CLow (num,id1,id2,i1,Int i2) ->
+    (output_string oc ("C" ^ (string_of_int num) ^ "Low of ");
      output_string oc (id1 ^ "_" ^ id2 ^ "_" ^ (string_of_int i1) ^ ": ");
      output_string oc (string_of_int i2);
      output_string oc "\n")
-  | DHigh (id,i1,Int i2) ->
-    (output_string oc "DHigh of ";
+  | DHigh (num,id,i1,Int i2) ->
+    (output_string oc ("D" ^ (string_of_int num) ^ "High of ");
      output_string oc (id ^ "_" ^ (string_of_int i1) ^ ": ");
      output_string oc (string_of_int i2);
      output_string oc "\n")
-  | DLow (id,i1,Int i2) ->
-    (output_string oc "DLow of ";
+  | DLow (num,id,i1,Int i2) ->
+    (output_string oc ("D" ^ (string_of_int num) ^ "Low of ");
      output_string oc (id ^ "_" ^ (string_of_int i1) ^ ": ");
      output_string oc (string_of_int i2);
      output_string oc "\n")

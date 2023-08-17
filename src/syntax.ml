@@ -627,7 +627,6 @@ let rec print_smtlibs oc sls bool_id fvs num =
         output_string oc fv;
         output_string oc " () Int)\n"
         ) fvs; *)
-     output_string oc "\n";
      List.iter (print_smtlibs_sub oc num) sls)
     (* (List.iter 
       (fun sl -> 
@@ -748,25 +747,25 @@ and fvs_of_smtlib sl =
   | Ands ss ->
     List.concat (List.map fvs_of_smtlib ss)
 
-let rec print_declare oc id_count fvs =
+let rec print_declare oc id_count fvs num =
   (List.iter
     (fun (id,i) ->
-       output_string oc ("(declare-fun o_" ^ id ^ "_");
+       output_string oc ("(declare-fun o_" ^ (string_of_int num) ^ "_" ^ id ^ "_");
        output_string oc (string_of_int i);
        output_string oc " () Real)\n";
-       print_declare_c oc fvs "l_" id i;
-       output_string oc ("(declare-fun d_l_" ^ id ^ "_");
+       print_declare_c oc fvs "l_" id i num;
+       output_string oc ("(declare-fun d_" ^ (string_of_int num) ^ "_l_" ^ id ^ "_");
        output_string oc (string_of_int i);
        output_string oc " () Int)\n";
-       print_declare_c oc fvs "h_" id i;
-       output_string oc ("(declare-fun d_h_" ^ id ^ "_");
+       print_declare_c oc fvs "h_" id i num;
+       output_string oc ("(declare-fun d_" ^ (string_of_int num) ^ "_h_" ^ id ^ "_");
        output_string oc (string_of_int i);
        output_string oc " () Int)\n"
        ) id_count);
-and print_declare_c oc fvs lh id i =
+and print_declare_c oc fvs lh id i num =
   List.iter
     (fun fv ->
-       output_string oc ("(declare-fun c_" ^ lh ^ fv ^ "_" ^ id ^ "_");
+       output_string oc ("(declare-fun c_" ^ (string_of_int num) ^ "_" ^ lh ^ fv ^ "_" ^ id ^ "_");
        output_string oc (string_of_int i);
        output_string oc " () Int)\n"
        ) fvs

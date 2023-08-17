@@ -31,16 +31,16 @@ defines:
 ;
 
 define:
-| LPAREN DEF O id UNDER int LPAREN RPAREN TREAL value RPAREN 
-  { Own($4, $6, $10) }
-| LPAREN DEF C H id UNDER id UNDER int LPAREN RPAREN TINT value RPAREN 
-  { CHigh($5, $7, $9, $13) }
-| LPAREN DEF C L id UNDER id UNDER int LPAREN RPAREN TINT value RPAREN 
-  { CLow($5, $7, $9, $13) }
-| LPAREN DEF D H id UNDER int LPAREN RPAREN TINT value RPAREN 
-  { DHigh($5, $7, $11) }
-| LPAREN DEF D L id UNDER int LPAREN RPAREN TINT value RPAREN 
-  { DLow($5, $7, $11) }
+| LPAREN DEF O int UNDER id UNDER int LPAREN RPAREN TREAL value RPAREN 
+  { Own($4, $6, $8, $12) }
+| LPAREN DEF C int UNDER H id UNDER id UNDER int LPAREN RPAREN TINT value RPAREN 
+  { CHigh($4, $7, $9, $11, $15) }
+| LPAREN DEF C int UNDER L id UNDER id UNDER int LPAREN RPAREN TINT value RPAREN 
+  { CLow($4, $7, $9, $11, $15) }
+| LPAREN DEF D int UNDER H id UNDER int LPAREN RPAREN TINT value RPAREN 
+  { DHigh($4, $7, $9, $13) }
+| LPAREN DEF D int UNDER L id UNDER int LPAREN RPAREN TINT value RPAREN 
+  { DLow($4, $7, $9, $13) }
 ;
 
 value:
