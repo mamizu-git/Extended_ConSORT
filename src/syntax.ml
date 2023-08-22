@@ -640,7 +640,7 @@ let rec print_smtlibs oc sls bool_id fvs num =
         ) sls;
     output_string oc "\n") *)
   else 
-    (for ii = -5 to 5 do
+    (for ii = -10 to 10 do
       List.iter 
       (fun sl -> 
         output_string oc "(assert ";
