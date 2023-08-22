@@ -1,23 +1,6 @@
-squared_norm(n, p) 
-[ <#n: int, p: int ref (0, n - 1, 0.5)> -> 
-  <#n: int, p: int ref (0, n - 1, 0.0) | int > ]
-{
-  if n <= 0 then {
-    0
-  } else {
-    let x = *p in
-    let w = x * x in
-    let q = p + 1 in
-    let m = n - 1 in
-    let r = squared_norm(m, q) in
-    let z = r + w in
-    z
-  }
-}
-
 init_x(n, x, p) 
-[ <#n: int, x: int, p: int ref (0, n - 1, 1.0)> -> 
-  <#n: int, x: int, p: int ref (0, n - 1, 1.0) | int > ]
+[ <#n: int, x: int, p: int ref > -> 
+  <#n: int, x: int, p: int ref | int> ]
 {
   if n <= 0 then {
     1
@@ -33,10 +16,18 @@ init_x(n, x, p)
 
 {
   let p = mkarray 3 in
+  let q = p + 1 in
+  let r = q + 1 in
   let m = 3 in
-  let z = 1 in
-  let d = init_x(m, z, p) in
-  let x = squared_norm(m, p) in
-  assert(x >= 0);
+  let x = 1 in
+  let d = init_x(m, x, p) in
+  let pp = *p in
+  assert(pp = 1);
+  alias(q = p + 1);
+  let qq = *q in
+  assert(qq = 1);
+  alias(r = q + 1);
+  let rr = *r in
+  assert(rr = 1);
   ()
 }
