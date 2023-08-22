@@ -112,6 +112,8 @@ ftype:
   { FTRef($1, $4, $6, $8) }
 | TINT
   { FTInt(VarPred) }
+| ftype REF 
+  { FTRef($1, ENull, ENull, 0.) }
 ;
 
 smtlib:

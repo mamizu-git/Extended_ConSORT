@@ -65,8 +65,9 @@ let collect_ownchc ownerships num =
 
 
 let g num (sl, (el,eh,f)) = 
-  match sl with
-  | PtrVarPred(num',_,_,_,_) when num' = num ->
+  match sl, el with
+  | _, ENull -> []
+  | PtrVarPred(num',_,_,_,_), _ when num' = num ->
     if f = 0. then
       [Imply(Id "true", sl)]
     else 

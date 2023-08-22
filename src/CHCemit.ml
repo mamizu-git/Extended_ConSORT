@@ -6,29 +6,34 @@ open Elim
 
 let id_count_chc = ref []
 
-let new_id id l =
+let rec lookup_ifel id ifel env =
+  match env with
+  | [] -> raise Unbound
+  | (x, (l, lst)) :: nenv -> if id = x && ifel = lst then l else lookup_ifel id ifel nenv
+
+let new_id id l ifel =
   try
-    let i = lookup id !id_count_chc in
+    let i = lookup_ifel id ifel !id_count_chc in
     if i = l then ()
-    else id_count_chc := (id, l) :: !id_count_chc
+    else id_count_chc := (id, (l, ifel)) :: !id_count_chc
   with 
-    Unbound -> id_count_chc := (id, l) :: !id_count_chc
+    Unbound -> id_count_chc := (id, (l, ifel)) :: !id_count_chc
 
 let rec print_id_count_chc id_count_chc = 
   match id_count_chc with
   | [] -> print_newline ()
-  | (id, l) :: id_count_chc' -> print_string ("(" ^ id ^ ", "); print_int l; print_string ") "; print_id_count_chc id_count_chc'
+  | (id, (l, ifel)) :: id_count_chc' -> print_string ("(" ^ id ^ ", "); print_int l; print_string (ifel_to_str ifel); print_string ") "; print_id_count_chc id_count_chc'
 
-let rec lookup_pre id env = 
+let rec lookup_pre_ifel id ifel env = 
   match env with
   | [] -> raise Unbound
-  | (x, _) :: nenv -> if id = x then lookup id nenv else lookup_pre id nenv
+  | (x, _) :: nenv -> if id = x then lookup_ifel id ifel nenv else lookup_pre_ifel id ifel nenv
 
-let ptrpred id i_sl n_sl =
-  PtrPred(id, lookup id !id_count_chc, i_sl, n_sl)
+let ptrpred id i_sl n_sl ifel =
+  PtrPred(id, (string_of_int (lookup_ifel id ifel !id_count_chc)) ^ (ifel_to_str ifel), i_sl, n_sl)
 
-let ptrpred_p id i_sl n_sl =
-  PtrPred(id, lookup_pre id !id_count_chc, i_sl, n_sl)
+let ptrpred_p id i_sl n_sl ifel =
+  PtrPred(id, (string_of_int (lookup_pre_ifel id ifel !id_count_chc)) ^ (ifel_to_str ifel), i_sl, n_sl)
 
 let find_subst ftid_ft e = 
   match ftid_ft with
@@ -39,20 +44,60 @@ let find_subst ftid_ft e =
 
 let varpred_count = ref []
 
-let rec emit_chc fvs fun_num c =
+let rec find_id_count ifel id_count res = 
+  match id_count with
+  | [] -> res
+  | (x, (_,lst)) :: id_count' -> 
+    if List.mem x res || ifel <> lst then 
+      find_id_count ifel id_count' res 
+    else 
+      find_id_count ifel id_count' (x :: res)
+ 
+let rec union_list ls1 ls2 = 
+  match ls1 with
+  | [] -> ls2
+  | x :: ls1' -> if List.mem x ls2 then union_list ls1' ls2 else union_list ls1' (x :: ls2)
+
+let rec emit_chc fvs fun_num ifel c =
   match c with
   | CHCIf (e,cs1,cs2,l) -> 
-    let ss1 = List.concat (List.map (emit_chc fvs fun_num) cs1) in
+    let ids_pre = find_id_count ifel !id_count_chc [] in 
+    List.iter (fun id -> new_id id l ("if" :: ifel); new_id id l ("el" :: ifel)) ids_pre;
+    let ss_pre = 
+      List.concat (List.map 
+        (fun id -> 
+          [Imply(ptrpred id (FV "i") (FV "n") ifel, ptrpred id (FV "i") (FV "n") ("if" :: ifel));
+           Imply(ptrpred id (FV "i") (FV "n") ifel, ptrpred id (FV "i") (FV "n") ("el" :: ifel))]
+        ) ids_pre) in
+    let ss1 = List.concat (List.map (emit_chc fvs fun_num ("if" :: ifel)) cs1) in
     let ss1' = List.map (fun s -> Imply(exp_to_smtlib e, s)) ss1 in
-    let ss2 = List.concat (List.map (emit_chc fvs fun_num) cs2) in
+    let ss2 = List.concat (List.map (emit_chc fvs fun_num ("el" :: ifel)) cs2) in
     let ss2' = List.map (fun s -> Imply(Not(exp_to_smtlib e), s)) ss2 in
-    ss1' @ ss2'
+    let ids_post_if = find_id_count ("if" :: ifel) !id_count_chc [] in
+    let ids_post_el = find_id_count ("el" :: ifel) !id_count_chc [] in
+    let ids_post = union_list ids_post_if ids_post_el in
+    List.iter (fun id -> new_id id (l+1) ifel) ids_post; (**)
+    let ss_post_if = 
+      List.map 
+        (fun s -> Imply(exp_to_smtlib e, s))
+        (List.map 
+          (fun id -> 
+            Imply(ptrpred id (FV "i") (FV "n") ("if" :: ifel), ptrpred id (FV "i") (FV "n") ifel)
+          ) ids_post_if) in
+    let ss_post_el = 
+      List.map 
+        (fun s -> Imply(Not(exp_to_smtlib e), s))
+        (List.map 
+          (fun id -> 
+            Imply(ptrpred id (FV "i") (FV "n") ("el" :: ifel), ptrpred id (FV "i") (FV "n") ifel)
+          ) ids_post_el) in
+    ss_pre @ ss1' @ ss2' @ ss_post_if @ ss_post_el
   | CHCLetInt (id,e,l) -> 
-    new_id id l;
+    (* new_id id l ifel; *)
     (match e with
      | EDeref id' -> 
        intpred_env := (id, []) :: !intpred_env;
-       [Imply(ptrpred id' (Id "0") (FV "n"), IntPred(id, ["v"]))]
+       [Imply(ptrpred id' (Id "0") (FV "n") ifel, IntPred(id, ["v"]))]
      | EApp (id',es) -> 
        let (ftid_fts1, ftid_fts2, ft_r) = lookup id' !fn_env_chc in
        let subst = List.concat (List.map2 find_subst ftid_fts1 es) in
@@ -63,7 +108,7 @@ let rec emit_chc fvs fun_num c =
           let fvs = lookup "m" !intpred_env in 
           let num = lookup id' fun_num in
           varpred_count := (PtrVarPred(num, id_arg, "b", (FV "i"), (FV "n")), (el,eh,f)) :: !varpred_count;
-          [Imply(Ands([ptrpred id_e (FV "i") (FV "n"); IntPred("m", "m" :: fvs)]), PtrVarPred(num, id_arg, "b", (FV "i"), (FV "m")))] (* "m" の扱い*)
+          [Imply(Ands([ptrpred id_e (FV "i") (FV "n") ifel; IntPred("m", "m" :: fvs)]), PtrVarPred(num, id_arg, "b", (FV "i"), (FV "m")))] (* "m" の扱い*)
         | (RawId id_arg, FTInt VarPred) -> 
           let FV id_e = exp_to_smtlib e in
           let fvs = lookup id_e !intpred_env in 
@@ -80,7 +125,7 @@ let rec emit_chc fvs fun_num c =
            let FV id_e = exp_to_smtlib e in
            let n_sl = smtlib_subst subst sl in
            let fvs = lookup "m" !intpred_env in 
-           [Imply(Ands([ptrpred id_e (FV "i") (FV "n"); IntPred("m", "m" :: fvs)]), n_sl)] (* "m" の扱い*)
+           [Imply(Ands([ptrpred id_e (FV "i") (FV "n") ifel; IntPred("m", "m" :: fvs)]), n_sl)] (* "m" の扱い*)
          | (RawId _, FTInt sl) -> 
            let FV id_e = exp_to_smtlib e in
            let fvs = lookup id_e !intpred_env in 
@@ -97,16 +142,16 @@ let rec emit_chc fvs fun_num c =
          | (RawId id_arg, FTRef ((FTInt VarPred),el,eh,f)) -> 
            let FV id_e = exp_to_smtlib e in
            let fvs = lookup "m" !intpred_env in 
-           new_id id_e l;
+           new_id id_e l ifel;
            let num = lookup id' fun_num in
            varpred_count := (PtrVarPred(num, id_arg, "e", (FV "i"), (FV "n")), (el,eh,f)) :: !varpred_count;
-           [Imply(Ands([PtrVarPred(num, id_arg, "e", (FV "i"), (FV "m")); IntPred("m", "m" :: fvs)]), ptrpred id_e (FV "i") (FV "n"))] (**)
+           [Imply(Ands([PtrVarPred(num, id_arg, "e", (FV "i"), (FV "m")); IntPred("m", "m" :: fvs)]), ptrpred id_e (FV "i") (FV "n") ifel)] (**)
          | (RawId _, FTRef ((FTInt sl),_,_,_)) -> 
            let FV id_e = exp_to_smtlib e in
            let n_sl = smtlib_subst subst sl in
            let fvs = lookup "m" !intpred_env in 
-           new_id id_e l;
-           [Imply(Ands([n_sl; IntPred("m", "m" :: fvs)]), ptrpred id_e (FV "i") (FV "n"))] (**)
+           new_id id_e l ifel;
+           [Imply(Ands([n_sl; IntPred("m", "m" :: fvs)]), ptrpred id_e (FV "i") (FV "n") ifel)] (**)
          | (RawId _, FTInt _) -> 
            []
          | (HashId _, FTInt _) -> 
@@ -140,9 +185,9 @@ let rec emit_chc fvs fun_num c =
        List.iter (fun fv -> intpred_env := (fv, []) :: !intpred_env) fvs;
        [Imply(Ands(Eq(Id("v"), exp_to_smtlib e) :: (List.map (fun fv -> IntPred(fv, [fv])) fvs)), IntPred(id, "v" :: hash_fvs))])
   | CHCLet (id1,id2,l) -> 
-    new_id id1 l; new_id id2 l;
-    [Imply(ptrpred_p id2 (FV "i") (FV "n"), ptrpred id2 (FV "i") (FV "n"));
-     Imply(ptrpred_p id2 (FV "i") (FV "n"), ptrpred id1 (FV "i") (FV "n"))]
+    new_id id1 l ifel; new_id id2 l ifel;
+    [Imply(ptrpred_p id2 (FV "i") (FV "n") ifel, ptrpred id2 (FV "i") (FV "n") ifel);
+     Imply(ptrpred_p id2 (FV "i") (FV "n") ifel, ptrpred id1 (FV "i") (FV "n") ifel)]
   (* | CLetDeref (id1,id2,l) -> 
     (print_string ("CLetDeref(" ^ id1 ^ ", ");
      print_string id2;
@@ -150,28 +195,28 @@ let rec emit_chc fvs fun_num c =
      print_int l;
      print_string ")") *)
   | CHCLetAddPtr (id1,id2,i,l) -> 
-    new_id id1 l; new_id id2 l;
-    [Imply(ptrpred_p id2 (FV "i") (FV "n"), ptrpred id2 (FV "i") (FV "n"));
-     Imply(ptrpred_p id2 (FV "i") (FV "n"), ptrpred id1 (Sub((FV "i"), (Id (string_of_int i)))) (FV "n"))] 
+    new_id id1 l ifel; new_id id2 l ifel;
+    [Imply(ptrpred_p id2 (FV "i") (FV "n") ifel, ptrpred id2 (FV "i") (FV "n") ifel);
+     Imply(ptrpred_p id2 (FV "i") (FV "n") ifel, ptrpred id1 (Sub((FV "i"), (Id (string_of_int i)))) (FV "n") ifel)] 
   | CHCMkArray (id,i,l) -> (* i いらない *)
-    new_id id l;
-    [Imply(Id "true", ptrpred id (FV "i") (FV "n"))]
+    new_id id l ifel;
+    [Imply(Id "true", ptrpred id (FV "i") (FV "n") ifel)]
   | CHCAssignInt (id,e,l) -> 
-    new_id id l;
+    new_id id l ifel;
     (match e with
      | EDeref id' -> (* 到達しないはず *)
-       [Imply(And(Imply(Eq((FV "i"), (Id "0")), ptrpred id' (Id "0") (FV "n")), 
-                  Imply(Not(Eq((FV "i"), (Id "0"))), ptrpred_p id (FV "i") (FV "n"))),
-              ptrpred id (FV "i") (FV "n"))]
+       [Imply(And(Imply(Eq((FV "i"), (Id "0")), ptrpred id' (Id "0") (FV "n") ifel), 
+                  Imply(Not(Eq((FV "i"), (Id "0"))), ptrpred_p id (FV "i") (FV "n") ifel)),
+              ptrpred id (FV "i") (FV "n") ifel)]
      (* | EApp (id',es) ->  *)
      | EVar x ->
        [Imply(And(Imply(Eq((FV "i"), (Id "0")), IntPred(x, ["v"])), 
-                  Imply(Not(Eq((FV "i"), (Id "0"))), ptrpred_p id (FV "i") (FV "n"))),
-              ptrpred id (FV "i") (FV "n"))]
+                  Imply(Not(Eq((FV "i"), (Id "0"))), ptrpred_p id (FV "i") (FV "n") ifel)),
+              ptrpred id (FV "i") (FV "n") ifel)]
      | e -> (* EConstInt のみ？ *)
        [Imply(And(Imply(Eq((FV "i"), (Id "0")), Eq(Id("v"), exp_to_smtlib e)), 
-                  Imply(Not(Eq((FV "i"), (Id "0"))), ptrpred_p id (FV "i") (FV "n"))),
-              ptrpred id (FV "i") (FV "n"))])
+                  Imply(Not(Eq((FV "i"), (Id "0"))), ptrpred_p id (FV "i") (FV "n") ifel)),
+              ptrpred id (FV "i") (FV "n") ifel)])
   (* | CAssignRef (id1,id2,l) -> 
     (print_string ("CAssignRef(" ^ id1 ^ ", ");
      print_string id2;
@@ -179,9 +224,9 @@ let rec emit_chc fvs fun_num c =
      print_int l;
      print_string ")") *)
   | CHCAlias (id1,id2,l) -> 
-    new_id id1 l; new_id id2 l;
-    [Imply(And(ptrpred_p id2 (FV "i") (FV "n"), ptrpred_p id1 (FV "i") (FV "n")), ptrpred id2 (FV "i") (FV "n"));
-     Imply(And(ptrpred_p id2 (FV "i") (FV "n"), ptrpred_p id1 (FV "i") (FV "n")), ptrpred id1 (FV "i") (FV "n"))]
+    new_id id1 l ifel; new_id id2 l ifel;
+    [Imply(And(ptrpred_p id2 (FV "i") (FV "n") ifel, ptrpred_p id1 (FV "i") (FV "n") ifel), ptrpred id2 (FV "i") (FV "n") ifel);
+     Imply(And(ptrpred_p id2 (FV "i") (FV "n") ifel, ptrpred_p id1 (FV "i") (FV "n") ifel), ptrpred id1 (FV "i") (FV "n") ifel)]
   (* | CAliasDeref (id1,id2,l) -> 
     (print_string ("CAliasDeref(" ^ id1 ^ ", ");
      print_string id2;
@@ -189,9 +234,9 @@ let rec emit_chc fvs fun_num c =
      print_int l;
      print_string ")") *)
   | CHCAliasAddPtr (id1,id2,i,l) -> 
-    new_id id1 l; new_id id2 l;
-    [Imply(And(ptrpred_p id2 (FV "i") (FV "n"), ptrpred_p id1 (Sub((FV "i"), (Id (string_of_int i)))) (FV "n")), ptrpred id2 (FV "i") (FV "n"));
-     Imply(And(ptrpred_p id2 (FV "i") (FV "n"), ptrpred_p id1 (Sub((FV "i"), (Id (string_of_int i)))) (FV "n")), ptrpred id1 (Sub((FV "i"), (Id (string_of_int i)))) (FV "n"))]
+    new_id id1 l ifel; new_id id2 l ifel;
+    [Imply(And(ptrpred_p id2 (FV "i") (FV "n") ifel, ptrpred_p id1 (Sub((FV "i"), (Id (string_of_int i)))) (FV "n") ifel), ptrpred id2 (FV "i") (FV "n") ifel);
+     Imply(And(ptrpred_p id2 (FV "i") (FV "n") ifel, ptrpred_p id1 (Sub((FV "i"), (Id (string_of_int i)))) (FV "n") ifel), ptrpred id1 (Sub((FV "i"), (Id (string_of_int i)))) (FV "n") ifel)]
   | CHCAssert (e,l) -> 
     let fvs = fvs_of_exp e in
     if fvs = [] then
@@ -262,11 +307,16 @@ let find_fv ftid_ft =
   | (HashId id, _) -> [id]
   | _ -> []
 
+let find_ref_id ftid_ft = 
+  match ftid_ft with
+  | (RawId id, FTRef _) -> [id]
+  | _ -> [] 
+
 let find_id ftid_ft = 
   match ftid_ft with
   | (RawId id, FTRef _) -> [id]
   | (RawId id, FTInt _) -> [id]
-  | (HashId id, FTInt _) -> [id]
+  | (HashId id, FTRef _) -> [id]
   | _ -> [] 
 
 let rec assoc_ft id ftid_fts = 
@@ -282,9 +332,10 @@ let ics_to_smtlib ics fun_num =
   let (ftid_fts1, ftid_fts2, ft_r) = lookup id' !fn_env_chc in
   let fvs = List.concat (List.map find_fv ftid_fts1) in
   (* List.iter print_string fvs; *)
+  let ref_ids =  List.concat (List.map find_ref_id ftid_fts1) in
   let ids =  List.concat (List.map find_id ftid_fts1) in
   (* List.iter print_string ids; *)
-  id_count_chc := List.map (fun id -> (id, 1)) ids;
+  id_count_chc := List.map (fun id -> (id, (1,[]))) ref_ids;
   intpred_env := [];
   varpred_count := [];
   let g1 id = 
@@ -293,30 +344,30 @@ let ics_to_smtlib ics fun_num =
     | VarPred, FTRef (_,el,eh,f) -> 
       let num = lookup id' fun_num in
       varpred_count := (PtrVarPred(num, id, "b", (FV "i"), (FV "n")), (el,eh,f)) :: !varpred_count;
-      [Imply(PtrVarPred(num, id, "b", (FV "i"), (FV "n")), ptrpred id (FV "i") (FV "n"))] (**)
+      [Imply(PtrVarPred(num, id, "b", (FV "i"), (FV "n")), ptrpred id (FV "i") (FV "n") [])] (**)
     | VarPred, FTInt _ -> 
       intpred_env := (id, []) :: !intpred_env;
       []
     | _, FTRef _ -> 
-      [Imply(sl, ptrpred id (FV "i") (FV "n"))] (**)
+      [Imply(sl, ptrpred id (FV "i") (FV "n") [])] (**)
     | _, FTInt _ -> 
       intpred_env := (id, []) :: !intpred_env;
       [Imply(sl, IntPred(id, ["v"]))]
     | _ -> raise ConstrError
   in
   let s1 = List.concat (List.map g1 ids) in
-  let ss = List.concat (List.map (emit_chc fvs fun_num) cs) in
+  let ss = List.concat (List.map (emit_chc fvs fun_num []) cs) in
   let g2 id = 
     let (sl,ft) = assoc_ft id ftid_fts2 in 
     match sl, ft with
     | VarPred, FTRef (_,el,eh,f) -> 
       let num = lookup id' fun_num in
       varpred_count := (PtrVarPred(num, id, "e", (FV "i"), (FV "n")), (el,eh,f)) :: !varpred_count;
-      [Imply(ptrpred id (FV "i") (FV "n"), PtrVarPred(num, id, "e", (FV "i"), (FV "n")))] (**)
+      [Imply(ptrpred id (FV "i") (FV "n") [], PtrVarPred(num, id, "e", (FV "i"), (FV "n")))] (**)
     | VarPred, FTInt _ -> 
       []
     | _, FTRef _ -> 
-      [Imply(ptrpred id (FV "i") (FV "n"), sl)] (**)
+      [Imply(ptrpred id (FV "i") (FV "n") [], sl)] (**)
     | _, FTInt _ -> 
       [Imply(IntPred(id, ["v"]), sl)]
     | _ -> raise ConstrError

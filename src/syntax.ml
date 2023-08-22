@@ -23,7 +23,7 @@ type smtlib =
   | Id of id
   | IntPred of id * id list
   | IntVarPred of int * id * id list
-  | PtrPred of id * pos * smtlib * smtlib
+  | PtrPred of id * id * smtlib * smtlib
   | PtrVarPred of int * id * id * smtlib * smtlib
   | VarPred
   | Ands of smtlib list
@@ -66,6 +66,7 @@ type exp =
   | EConstTrue
   | EConstFalse
   | EVar of id
+  | ENull
 
 type ftype = 
   | FTInt of smtlib
@@ -214,7 +215,7 @@ let rec print_smtlib oc sl bool_id n num =
           output_string oc (" " ^ id)) ids;
     output_string oc ")")
   | PtrPred (id,l,i_sl,n_sl) -> 
-    (output_string oc ("(P" ^ (string_of_int num) ^ "_" ^ id ^ "_" ^ (string_of_int l) ^ " ");
+    (output_string oc ("(P" ^ (string_of_int num) ^ "_" ^ id ^ "_" ^ l ^ " ");
      print_smtlib oc i_sl bool_id n num;
      output_string oc " v ";
      print_smtlib oc n_sl bool_id n num;
@@ -435,6 +436,8 @@ let rec print_exp exp =
     print_string "false"
   | EVar x -> 
     print_string x
+  | ENull ->
+    print_string "ENull"
 and print_exps es =
   match es with
   | [] -> ()
@@ -637,54 +640,15 @@ let rec print_smtlibs oc sls bool_id fvs num =
         ) sls;
     output_string oc "\n") *)
   else 
-    (List.iter 
+    (for ii = -5 to 5 do
+      List.iter 
       (fun sl -> 
         output_string oc "(assert ";
-        print_smtlib oc sl false (-3) num; 
+        print_smtlib oc sl false ii num; 
         output_string oc ")\n"
         ) sls;
-    output_string oc "\n";
-    List.iter 
-      (fun sl -> 
-        output_string oc "(assert ";
-        print_smtlib oc sl false (-2) num; 
-        output_string oc ")\n"
-        ) sls;
-    output_string oc "\n";
-    List.iter 
-      (fun sl -> 
-        output_string oc "(assert ";
-        print_smtlib oc sl false (-1) num; 
-        output_string oc ")\n"
-        ) sls;
-    output_string oc "\n";
-    List.iter 
-      (fun sl -> 
-        output_string oc "(assert ";
-        print_smtlib oc sl false 0 num; 
-        output_string oc ")\n"
-        ) sls;
-    output_string oc "\n";
-    List.iter 
-      (fun sl -> 
-        output_string oc "(assert ";
-        print_smtlib oc sl false 1 num; 
-        output_string oc ")\n"
-        ) sls;
-    output_string oc "\n";
-    List.iter 
-      (fun sl -> 
-        output_string oc "(assert ";
-        print_smtlib oc sl false 2 num; 
-        output_string oc ")\n"
-        ) sls;
-    output_string oc "\n";
-    List.iter 
-      (fun sl -> 
-        output_string oc "(assert ";
-        print_smtlib oc sl false 3 num; 
-        output_string oc ")\n"
-        ) sls)
+      output_string oc "\n";
+      done)
 and print_smtlibs_sub oc num sl = 
   let fvs = list_to_set (fvs_of_smtlib sl) [] in
   if fvs = [] then
@@ -747,32 +711,68 @@ and fvs_of_smtlib sl =
   | Ands ss ->
     List.concat (List.map fvs_of_smtlib ss)
 
+let rec ifel_to_str ifel = 
+  match ifel with
+  | [] -> ""
+  | s :: ifel' -> "_" ^ s ^ ifel_to_str ifel'
+
 let rec print_declare oc id_count fvs num =
   (List.iter
-    (fun (id,i) ->
+    (fun (id,(i,ifel)) ->
        output_string oc ("(declare-fun o_" ^ (string_of_int num) ^ "_" ^ id ^ "_");
-       output_string oc (string_of_int i);
+       output_string oc (string_of_int i ^ ifel_to_str ifel);
        output_string oc " () Real)\n";
-       print_declare_c oc fvs "l_" id i num;
+       print_declare_c oc fvs "l_" id i ifel num;
        output_string oc ("(declare-fun d_" ^ (string_of_int num) ^ "_l_" ^ id ^ "_");
-       output_string oc (string_of_int i);
+       output_string oc (string_of_int i ^ ifel_to_str ifel);
        output_string oc " () Int)\n";
-       print_declare_c oc fvs "h_" id i num;
+       print_declare_c oc fvs "h_" id i ifel num;
        output_string oc ("(declare-fun d_" ^ (string_of_int num) ^ "_h_" ^ id ^ "_");
-       output_string oc (string_of_int i);
+       output_string oc (string_of_int i ^ ifel_to_str ifel);
        output_string oc " () Int)\n"
        ) id_count);
-and print_declare_c oc fvs lh id i num =
+and print_declare_c oc fvs lh id i ifel num =
   List.iter
     (fun fv ->
        output_string oc ("(declare-fun c_" ^ (string_of_int num) ^ "_" ^ lh ^ fv ^ "_" ^ id ^ "_");
-       output_string oc (string_of_int i);
+       output_string oc (string_of_int i ^ ifel_to_str ifel);
        output_string oc " () Int)\n"
        ) fvs
 
-let print_declare_chc oc id_count varpred_count num =
+let rec print_declare_varown oc varown_count fvs num =
   (List.iter
-    (fun (id,i) ->
+    (fun (id,be,num') ->
+       if num' = num then
+         (output_string oc ("(declare-fun o_" ^ (string_of_int num) ^ "_" ^ id ^ "_" ^ be);
+         output_string oc " () Real)\n";
+         print_declare_varown_c oc fvs "l_" id be num;
+         output_string oc ("(declare-fun d_" ^ (string_of_int num) ^ "_l_" ^ id ^ "_" ^ be);
+         output_string oc " () Int)\n";
+         print_declare_varown_c oc fvs "h_" id be num;
+         output_string oc ("(declare-fun d_" ^ (string_of_int num) ^ "_h_" ^ id ^ "_" ^ be);
+         output_string oc " () Int)\n")
+       else 
+         ()
+       ) varown_count);
+and print_declare_varown_c oc fvs lh id be num =
+  List.iter
+    (fun fv ->
+       output_string oc ("(declare-fun c_" ^ (string_of_int num) ^ "_" ^ lh ^ fv ^ "_" ^ id ^ "_" ^ be);
+       output_string oc " () Int)\n"
+       ) fvs
+
+let print_declare_chc_int oc intpred_env num =
+  let intpred_set = list_to_set intpred_env [] in
+  List.iter
+    (fun (id,fvs) ->
+       output_string oc ("(declare-fun P" ^ string_of_int num ^ "_" ^ id ^ " ( Int ");
+       List.iter (fun _ -> output_string oc "Int ") fvs;
+       output_string oc (") Bool)\n")
+       ) intpred_set
+
+let print_declare_chc oc id_count num =
+  List.iter
+    (fun (id,(i,ifel)) ->
        try 
          let fvs = List.assoc id !intpred_env in
          output_string oc ("(declare-fun P" ^ string_of_int num ^ "_" ^ id ^ " ( Int ");
@@ -780,10 +780,12 @@ let print_declare_chc oc id_count varpred_count num =
          output_string oc (") Bool)\n")
        with Not_found -> 
          output_string oc ("(declare-fun P" ^ string_of_int num ^ "_" ^ id ^ "_");
-         output_string oc (string_of_int i);
+         output_string oc (string_of_int i ^ ifel_to_str ifel);
          output_string oc " ( Int Int Int ) Bool)\n"
-       ) id_count);
-   (List.iter
+       ) id_count
+
+let print_declare_varpred oc varpred_count num =
+   List.iter
      (fun sl ->
         match sl with
         | IntVarPred(num',id,_) -> 
@@ -796,7 +798,7 @@ let print_declare_chc oc id_count varpred_count num =
             (output_string oc ("(declare-fun P" ^ string_of_int num ^ "_" ^ id ^ "_" ^ be);
             output_string oc " ( Int Int Int ) Bool)\n")
           else ()
-         ) (list_to_set (List.map fst varpred_count) []))
+         ) (list_to_set (List.map fst varpred_count) [])
 
 (* let print_declare_chc_int oc int_fvs num =
   (List.iter

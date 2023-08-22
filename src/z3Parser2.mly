@@ -31,16 +31,25 @@ defines:
 ;
 
 define:
-| LPAREN DEF O int UNDER id UNDER int LPAREN RPAREN TREAL value RPAREN 
+| LPAREN DEF O int UNDER id UNDER pos LPAREN RPAREN TREAL value RPAREN 
   { Own($4, $6, $8, $12) }
-| LPAREN DEF C int UNDER H id UNDER id UNDER int LPAREN RPAREN TINT value RPAREN 
+| LPAREN DEF C int UNDER H id UNDER id UNDER pos LPAREN RPAREN TINT value RPAREN 
   { CHigh($4, $7, $9, $11, $15) }
-| LPAREN DEF C int UNDER L id UNDER id UNDER int LPAREN RPAREN TINT value RPAREN 
+| LPAREN DEF C int UNDER L id UNDER id UNDER pos LPAREN RPAREN TINT value RPAREN 
   { CLow($4, $7, $9, $11, $15) }
-| LPAREN DEF D int UNDER H id UNDER int LPAREN RPAREN TINT value RPAREN 
+| LPAREN DEF D int UNDER H id UNDER pos LPAREN RPAREN TINT value RPAREN 
   { DHigh($4, $7, $9, $13) }
-| LPAREN DEF D int UNDER L id UNDER int LPAREN RPAREN TINT value RPAREN 
+| LPAREN DEF D int UNDER L id UNDER pos LPAREN RPAREN TINT value RPAREN 
   { DLow($4, $7, $9, $13) }
+;
+
+pos:
+| int 
+  { string_of_int $1 }
+| id
+  { $1 }
+| pos UNDER id
+  { $1 ^ "_" ^ $3 }
 ;
 
 value:

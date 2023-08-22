@@ -15,8 +15,9 @@ let rec main_int_sub oc all_cs bool_id n =
   if n < 0 then 
     ()
   else
-    (let (id_count, fvs, sls) = all_cs_to_smtlib all_cs n in
+    (let (id_count, varown_count, fvs, sls) = all_cs_to_smtlib all_cs n in
     print_declare oc id_count fvs n;
+    print_declare_varown oc varown_count fvs n;
     output_string oc "\n";
     print_smtlibs oc sls bool_id fvs (-1); 
     output_string oc "\n\n";
@@ -26,13 +27,13 @@ let main_int n =
   let oc_r1 = open_in "../experiment/test.imp" in
   let prog = Parser.program Lexer.read (Lexing.from_channel oc_r1) in
   close_in oc_r1;
-  (* print_program prog; print_newline (); print_newline (); *)
+  print_program prog; print_newline (); print_newline ();
   infer_prog prog;
   (* print_all_tyenv !all_tyenv; print_newline (); print_newline (); *)
   let prog' = convert prog in
   (* print_program prog'; print_newline (); print_newline (); *)
   let all_cs = collect_prog prog' in 
-  (* print_all_constraints all_cs; print_newline (); print_newline (); *)
+  print_all_constraints all_cs; print_newline (); print_newline ();
 
   let oc1 = open_out "../experiment/out_int.smt2" in
   main_int_sub oc1 all_cs false n;
@@ -59,7 +60,6 @@ let main_fv n =
   (* print_program prog'; print_newline (); print_newline (); *)
   let all_cs = collect_prog prog' in 
   (* print_all_constraints all_cs; print_newline (); print_newline (); *)
-  let (id_count, fvs, sls) = all_cs_to_smtlib all_cs n in
   
   let oc = open_out "../experiment/out_fv.smt2" in
   main_int_sub oc all_cs true n;
@@ -82,7 +82,9 @@ let rec main_chc_sub oc all_chcs n =
     let args_own_sls = ownexp_to_ownchc varpred_count n in
     let own_sls = collect_ownchc z3res n in 
 
-    print_declare_chc oc id_count varpred_count n;
+    print_declare_chc_int oc !intpred_env n;
+    print_declare_chc oc id_count n;
+    print_declare_varpred oc varpred_count n;
     output_string oc "\n";
     print_smtlibs oc sls true fvs n; 
     output_string oc "\n";
