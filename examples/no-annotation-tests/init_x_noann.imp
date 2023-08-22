@@ -1,6 +1,6 @@
 init_x(n, x, p) 
-[ <#n: int, x: int, p: int ref (0, n - 1, 1.0)> -> 
-  <#n: int, x: int, p: int ref (0, n - 1, 1.0) | int> ]
+[ <#n: int, x: int, p: int ref> -> 
+  <#n: int, x: int, p: int ref | int> ]
 {
   if n <= 0 then {
     1
@@ -26,7 +26,6 @@ init_x(n, x, p)
   let m = 2 in
   let x = 1 in
   let p1 = p in
-  alias(p1 = p);
   let d = init_x(m, x, p) in
   alias(p1 = p);
   let pp = *p in

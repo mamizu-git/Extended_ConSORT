@@ -1,0 +1,43 @@
+copy_array(n, p, q)
+[ <#n: int, p: int ref (0, n - 1, 0.5), q: int ref (0, n - 1, 1.0)> -> 
+  <#n: int, p: int ref (0, n - 1, 0.5), q: int ref (0, n - 1, 1.0) | int> ]
+{
+  if n <= 0 then {
+    1
+  } else {
+    let x = *p in
+    q := x;
+    let p1 = p + 1 in
+    let q1 = q + 1 in
+    let m = n - 1 in
+    let d = copy_array(m, p1, q1) in
+    alias(p1 = p + 1);
+    alias(q1 = q + 1);
+    1
+  }
+}
+
+{
+  let p = mkarray 3 in
+  p := 4;
+  let p1 = p + 1 in
+  p1 := 5;
+  let p2 = p1 + 1 in
+  p2 := 6;
+  alias(p2 = p1 + 1);
+  alias(p1 = p + 1);
+  let q = mkarray 3 in
+  let m = 3 in
+  let d = copy_array(m, p, q) in
+  let qq = *q in
+  assert(qq > 1);
+  let q1 = q + 1 in
+  alias(q1 = q + 1);
+  let qq1 = *q1 in
+  assert(qq1 > 1);
+  let q2 = q1 + 1 in
+  alias(q2 = q1 + 1);
+  let qq2 = *q2 in
+  assert(qq2 > 1);
+  ()
+}

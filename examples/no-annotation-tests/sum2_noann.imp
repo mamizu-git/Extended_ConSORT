@@ -1,5 +1,5 @@
 sum(n, p) 
-[ <#n: int, p: { v : int | (=> (and (>= i 0) (<= i (- n 1))) (>= v 0)) } ref (0, n - 1, 0.5)> -> 
+[ <#n: int, p: int ref> -> 
   <#n: int, p: int ref (0, n - 1, 0.) | int > ]
 {
   if n <= 0 then {
@@ -15,8 +15,8 @@ sum(n, p)
 }
 
 init_x(n, x, p) 
-[ <#n: int, x: int, p: int ref (0, n - 1, 1.0)> -> 
-  <#n: int, x: int, p: int ref (0, n - 1, 1.0) | int > ]
+[ <#n: int, x: int, p: int ref> -> 
+  <#n: int, x: int, p: int ref | int > ]
 {
   if n <= 0 then {
     1
