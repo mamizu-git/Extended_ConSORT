@@ -1,26 +1,30 @@
 sum(n, p) 
 [ <#n: int, p: int ref> -> 
-  <#n: int, p: int ref (0, n - 1, 0.) | int > ]
+  <#n: int, p: int ref | int> ]
 {
   if n <= 0 then {
     0
   } else {
     let x = *p in
-    let q = p + 1 in
-    let m = n - 1 in
-    let s = sum(m, q) in
-    let y = x + s in
-    y
+    if n = 1 then {
+      x
+    } else {
+      let q = p + 1 in
+      let m = n - 1 in
+      let s = sum(m, q) in
+      let y = x + s in
+      y
+    } 
   }
 }
 
 {
   let p = mkarray 3 in
-  p := 4;
+  p := 0;
   let q = p + 1 in
-  q := 5;
+  q := 1;
   let r = q + 1 in
-  r := 6;
+  r := 2;
   alias(r = q + 1);
   alias(q = p + 1);
   let m = 3 in

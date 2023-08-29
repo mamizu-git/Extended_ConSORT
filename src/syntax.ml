@@ -621,7 +621,7 @@ let rec list_to_set li res =
     let res' = list_to_set li' res in
     if List.mem x res' then res' else x :: res' 
 
-let rec print_smtlibs oc sls bool_id fvs num =
+let rec print_smtlibs oc sls bool_id fvs num iter =
   if bool_id then
     (
       (* List.iter
@@ -640,7 +640,7 @@ let rec print_smtlibs oc sls bool_id fvs num =
         ) sls;
     output_string oc "\n") *)
   else 
-    (for ii = -10 to 10 do
+    (for ii = -iter to iter do
       List.iter 
       (fun sl -> 
         output_string oc "(assert ";

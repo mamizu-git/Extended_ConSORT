@@ -7,13 +7,17 @@ copy_array(n, p, q)
   } else {
     let x = *p in
     q := x;
-    let p1 = p + 1 in
-    let q1 = q + 1 in
-    let m = n - 1 in
-    let d = copy_array(m, p1, q1) in
-    alias(p1 = p + 1);
-    alias(q1 = q + 1);
-    1
+    if n = 1 then {
+      1
+    } else {
+      let p1 = p + 1 in
+      let q1 = q + 1 in
+      let m = n - 1 in
+      let d = copy_array(m, p1, q1) in
+      alias(p1 = p + 1);
+      alias(q1 = q + 1);
+      1
+    }
   }
 }
 

@@ -1,6 +1,6 @@
 add_array(n, p, q, r) 
 [ <#n: int, p: int ref, q: int ref, r: int ref> -> 
-  <#n: int, p: int ref (0, n - 1, 0.), q: int ref (0, n - 1, 0.), r: int ref | int> ]
+  <#n: int, p: int ref, q: int ref, r: int ref | int> ]
 {
   if n <= 0 then {
     1
@@ -9,29 +9,37 @@ add_array(n, p, q, r)
     let y = *q in
     let z = x + y in
     r := z;
-    let p1 = p + 1 in
-    let q1 = q + 1 in
-    let r1 = r + 1 in
-    let m = n - 1 in
-    let d = add_array(m, p1, q1, r1) in
-    alias(r1 = r + 1);
-    1
+    if n = 1 then {
+      1
+    } else {
+      let p1 = p + 1 in
+      let q1 = q + 1 in
+      let r1 = r + 1 in
+      let m = n - 1 in
+      let d = add_array(m, p1, q1, r1) in
+      alias(r1 = r + 1);
+      1
+    }
   }
 }
 
 init_x(n, x, p) 
 [ <#n: int, x: int, p: int ref> -> 
-  <#n: int, x: int, p: int ref | int> ]
+  <#n: int, x: int, p: int ref | int > ]
 {
   if n <= 0 then {
     1
   } else {
     p := x;
-    let q = p + 1 in
-    let m = n - 1 in
-    let d = init_x(m, x, q) in
-    alias(q = p + 1);
-    1
+    if n = 1 then {
+      1
+    } else {
+      let q = p + 1 in
+      let m = n - 1 in
+      let d = init_x(m, x, q) in
+      alias(q = p + 1);
+      1
+    }
   }
 }
 

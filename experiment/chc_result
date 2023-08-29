@@ -1,4 +1,147 @@
-(error "
-  unimplemented, predicate is true (P0_q_2 (+ v_1 (- 1)) v_0 v_2)
-  while running preprocessor cfg_red
-")
+sat
+(model
+  (define-fun P1_ret
+    ( (v_0 Int) ) Bool
+    (>= v_0 0)
+  )
+  (define-fun P1_p_1_el
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    (and (or (>= (* (- 1) v_2) 0) (not (= v_0 0)) (>= v_1 0)) (or (>= (* (- 1) v_2) 0) (>= v_1 0) (and (>= v_2 1) (>= (* (- 1) v_1) 1) (not (= v_2 0)) (>= (+ v_0 (* (- 1) v_2)) 0)) (and (>= v_2 1) (>= (* (- 1) v_1) 1) (>= (* (- 1) v_0) 1) (not (= v_2 0)) (or (= v_2 0) (>= (+ v_2 (* (- 1) v_0)) 1) (>= (* (- 1) v_2) 1)))))
+  )
+  (define-fun P1_y
+    ( (v_0 Int) ) Bool
+    (P1_ret v_0)
+  )
+  (define-fun P0_p_1
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    true
+  )
+  (define-fun P0_p_2
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    (or (= v_1 0) (not (= v_0 0)))
+  )
+  (define-fun P0_q_3
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    (or (= v_1 0) (not (= (+ v_0 1) 0)) (>= v_0 2) (>= (* (- 1) v_0) 1))
+  )
+  (define-fun P0_p_3
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    (or (>= v_0 1) (= v_1 0) (not (= v_0 0)) (>= (* (- 1) v_0) 1))
+  )
+  (define-fun P1_s
+    ( (v_0 Int) ) Bool
+    (P1_ret v_0)
+  )
+  (define-fun P0_r_5
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    (or (and (= (+ v_1 (- 1)) 0) (not (= (+ v_0 2) 0))) (>= v_0 1) (>= (* (- 1) v_0) 2) (and (= (+ v_1 (- 1)) 0) (= (+ v_0 1) 0)) (and (= v_1 0) (not (= (+ v_0 1) 0))) (and (not (= (+ v_0 1) 0)) (not (= (+ v_0 2) 0))))
+  )
+  (define-fun P0_q_5
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    true
+  )
+  (define-fun P0_r_6
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    (or (P1_p_1_el (+ v_0 2) v_1 3) (not (P0_p_3 (+ v_0 2) v_1 v_2)))
+  )
+  (define-fun P0_r_7
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    true
+  )
+  (define-fun P0_q_7
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    (or (P1_p_1_el (+ v_0 1) v_1 3) (not (P0_p_3 (+ v_0 1) v_1 v_2)))
+  )
+  (define-fun P0_q_8
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    true
+  )
+  (define-fun P0_p_8
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    (P1_p_1_el v_0 v_1 3)
+  )
+  (define-fun P0_p_10
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    true
+  )
+  (define-fun P0_m
+    ( (v_0 Int) ) Bool
+    (= (+ v_0 (- 3)) 0)
+  )
+  (define-fun P0_n
+    ( (v_0 Int) ) Bool
+    false
+  )
+  (define-fun P0_x
+    ( (v_0 Int) ) Bool
+    (P1_ret v_0)
+  )
+  (define-fun P1_p_b
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    (P1_p_1_el v_0 v_1 v_2)
+  )
+  (define-fun P1_p_e
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    true
+  )
+  (define-fun P1_p_1
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    (P1_p_1_el v_0 v_1 v_2)
+  )
+  (define-fun P1_p_1_if
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    true
+  )
+  (define-fun P1_p_3_if_el
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    true
+  )
+  (define-fun P1_p_3_el_el
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    (or (= (+ v_2 (- 1)) 0) (>= (* (- 1) v_2) 0) (P1_p_b (+ v_0 (- 1)) v_1 (+ v_2 (- 1))))
+  )
+  (define-fun P1_q_4_el_el
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    (or (= (+ v_2 (- 1)) 0) (>= (* (- 1) v_2) 0) (P1_p_b v_0 v_1 (+ v_2 (- 1))))
+  )
+  (define-fun P1_p_4_el_el
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    true
+  )
+  (define-fun P1_q_6_el_el
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    true
+  )
+  (define-fun P1_p_4_el
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    true
+  )
+  (define-fun P1_q_4_el
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    true
+  )
+  (define-fun P1_p_2
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    true
+  )
+  (define-fun P1_q_2
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    true
+  )
+  (define-fun P1_x
+    ( (v_0 Int) ) Bool
+    (exists ( (v_1 Int) ) (and (>= v_1 1) (P1_p_1_el 0 v_0 v_1)))
+  )
+  (define-fun P1_m
+    ( (v_0 Int) (v_1 Int) ) Bool
+    (and (= (+ v_0 1 (* (- 1) v_1)) 0) (not (= (+ v_1 (- 1)) 0)) (>= v_1 1))
+  )
+  (define-fun P1_n
+    ( (v_0 Int) ) Bool
+    true
+  )
+  (define-fun P0_q_4
+    ( (v_0 Int) (v_1 Int) (v_2 Int) ) Bool
+    (P0_r_5 (+ v_0 (- 1)) v_1 v_2)
+  )
+)
