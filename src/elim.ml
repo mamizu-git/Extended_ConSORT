@@ -12,8 +12,10 @@ let rec elim_v env f_id args exp =
     ELetVarPtr(id1, id2, elim_v env f_id args e)
   | ELetDerefPtr (id1,id2,e) ->
     ELetDerefPtr(id1, id2, elim_v env f_id args e)
-  | ELetAddPtr (id1,id2,i,e) ->
-    ELetAddPtr(id1, id2, i, elim_v env f_id args e)
+  | ELetAddPtr (id1,id2,e1,e2) ->
+    ELetAddPtr(id1, id2, elim_v env f_id args e1, elim_v env f_id args e2)
+  | ELetSubPtr (id1,id2,e1,e2) ->
+    ELetSubPtr(id1, id2, elim_v env f_id args e1, elim_v env f_id args e2)
   | EIf (e1,e2,e3) ->
     EIf(elim_v env f_id args e1, elim_v env f_id args e2, elim_v env f_id args e3)
   | EMkarray (id,i,e) ->
@@ -81,8 +83,10 @@ let rec exp_subst subst exp =
     ELetVarPtr(id1, id2, exp_subst subst e)
   | ELetDerefPtr (id1,id2,e) ->
     ELetDerefPtr(id1, id2, exp_subst subst e)
-  | ELetAddPtr (id1,id2,i,e) ->
-    ELetAddPtr(id1, id2, i, exp_subst subst e)
+  | ELetAddPtr (id1,id2,e1,e2) ->
+    ELetAddPtr(id1, id2, exp_subst subst e1, exp_subst subst e2)
+  | ELetSubPtr (id1,id2,e1,e2) ->
+    ELetSubPtr(id1, id2, exp_subst subst e1, exp_subst subst e2)
   | EIf (e1,e2,e3) ->
     EIf(exp_subst subst e1, exp_subst subst e2, exp_subst subst e3)
   | EMkarray (id,i,e) ->
@@ -267,8 +271,10 @@ let rec ret_of_exp exp =
     ret_of_exp e
   | ELetDerefPtr (id1,id2,e) ->
     ret_of_exp e
-  | ELetAddPtr (id1,id2,i,e) ->
-    ret_of_exp e
+  | ELetAddPtr (id1,id2,e1,e2) ->
+    ret_of_exp e2
+  | ELetSubPtr (id1,id2,e1,e2) ->
+    ret_of_exp e2
   | EIf (e1,e2,e3) ->
     ret_of_exp e2 @ ret_of_exp e3
   | EMkarray (id,i,e) ->

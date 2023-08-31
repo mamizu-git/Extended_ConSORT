@@ -1,6 +1,6 @@
-sum4(n, p) 
-[ <#n: int, p: int ref (0, n - 1, 0.5) > -> 
-  <#n: int, p: int ref (0, n - 1, 0.0) | int> ]
+sum3(n, p) 
+[ <#n: int, p: int ref > -> 
+  <#n: int, p: int ref | int> ]
 {
   if n <= 0 then {
     0
@@ -9,13 +9,12 @@ sum4(n, p)
       let x = *p in
       x
     } else {
-      let m = n / 2 in
-      let k = n - m in
+      let m = n - 1 in
       let q = p + m in
-      let a = sum4(m, p) in
-      let b = sum4(k, q) in
+      let y = *q in
+      let s = sum3(m, p) in
       alias(q = p + m);
-      let z = a + b in
+      let z = y + s in
       z
     } 
   }
@@ -31,7 +30,7 @@ sum4(n, p)
   alias(r = q + 1);
   alias(q = p + 1);
   let m = 3 in
-  let x = sum4(m, p) in
+  let x = sum3(m, p) in
   assert(x >= 0);
   ()
 }

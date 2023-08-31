@@ -122,7 +122,7 @@ let rec constr_to_smtlib fvs n fun_num ifel c =
           (fun id -> 
             [Leq(o id n ifel, o id n ("if" :: ifel));
              Geq(lo fvs id n ifel, lo fvs id n ("if" :: ifel));
-             Leq(hi fvs id n ifel, hi fvs id n ("if" :: ifel))]
+             Leq(hi fvs id n ifel, hi fvs id n ("if" :: ifel))](**)
           ) ids_post_if)) in
     let ss_post_el = 
       List.map 
@@ -131,7 +131,7 @@ let rec constr_to_smtlib fvs n fun_num ifel c =
           (fun id -> 
             [Leq(o id n ifel, o id n ("el" :: ifel));
              Geq(lo fvs id n ifel, lo fvs id n ("el" :: ifel));
-             Leq(hi fvs id n ifel, hi fvs id n ("el" :: ifel))]
+             Leq(hi fvs id n ifel, hi fvs id n ("el" :: ifel))](**)
           ) ids_post_el)) in
     ss_pre @ ss1' @ ss2' @ ss_post_if @ ss_post_el
   | CLet (id1,id2,l) -> 
@@ -153,17 +153,32 @@ let rec constr_to_smtlib fvs n fun_num ifel c =
      print_string " | ";
      print_int l;
      print_string ")") *)
-  | CLetAddPtr (id1,id2,i,l) -> 
+  | CLetAddPtr (id1,id2,e,l) -> 
     new_id id1 l ifel; new_id id2 l ifel;
     (* let lh = if fvs = [] then [Leq(lo fvs id1 n ifel, hi fvs id1 n ifel); Leq(lo fvs id2 n ifel, hi fvs id2 n ifel)] else [] in  *)
+    let sl = exp_to_smtlib e in
     [Or(Geq(o_p id2 n ifel, Add(o id1 n ifel, o id2 n ifel)),
-     Or(Gt(Add(lo fvs id1 n ifel, Id (string_of_int i)), hi fvs id2 n ifel), 
-        Gt(lo fvs id2 n ifel, Add(hi fvs id1 n ifel, Id (string_of_int i)))));
+     Or(Gt(Add(lo fvs id1 n ifel, sl), hi fvs id2 n ifel), 
+        Gt(lo fvs id2 n ifel, Add(hi fvs id1 n ifel, sl))));
      Geq(o_p id2 n ifel, o id1 n ifel);
      Geq(o_p id2 n ifel, o id2 n ifel);
-     Leq(lo_p fvs id2 n ifel, Add(lo fvs id1 n ifel, Id (string_of_int i)));
+     Leq(lo_p fvs id2 n ifel, Add(lo fvs id1 n ifel, sl));
      Leq(lo_p fvs id2 n ifel, lo fvs id2 n ifel);
-     Geq(hi_p fvs id2 n ifel, Add(hi fvs id1 n ifel, Id (string_of_int i)));
+     Geq(hi_p fvs id2 n ifel, Add(hi fvs id1 n ifel, sl));
+     Geq(hi_p fvs id2 n ifel, hi fvs id2 n ifel)]
+     @ [Leq(lo fvs id1 n ifel, hi fvs id1 n ifel); Leq(lo fvs id2 n ifel, hi fvs id2 n ifel)] (**)
+  | CLetSubPtr (id1,id2,e,l) -> 
+    new_id id1 l ifel; new_id id2 l ifel;
+    (* let lh = if fvs = [] then [Leq(lo fvs id1 n ifel, hi fvs id1 n ifel); Leq(lo fvs id2 n ifel, hi fvs id2 n ifel)] else [] in  *)
+    let sl = exp_to_smtlib e in
+    [Or(Geq(o_p id2 n ifel, Add(o id1 n ifel, o id2 n ifel)),
+     Or(Gt(Sub(lo fvs id1 n ifel, sl), hi fvs id2 n ifel), 
+        Gt(lo fvs id2 n ifel, Sub(hi fvs id1 n ifel, sl))));
+     Geq(o_p id2 n ifel, o id1 n ifel);
+     Geq(o_p id2 n ifel, o id2 n ifel);
+     Leq(lo_p fvs id2 n ifel, Sub(lo fvs id1 n ifel, sl));
+     Leq(lo_p fvs id2 n ifel, lo fvs id2 n ifel);
+     Geq(hi_p fvs id2 n ifel, Sub(hi fvs id1 n ifel, sl));
      Geq(hi_p fvs id2 n ifel, hi fvs id2 n ifel)]
      @ [Leq(lo fvs id1 n ifel, hi fvs id1 n ifel); Leq(lo fvs id2 n ifel, hi fvs id2 n ifel)] (**)
   | CMkArray (id,i,l) -> 
@@ -237,55 +252,56 @@ let rec constr_to_smtlib fvs n fun_num ifel c =
      print_string " | ";
      print_int l;
      print_string ")") *)
-  | CAliasAddPtr (id1,id2,i,l) -> 
+  | CAliasAddPtr (id1,id2,e,l) -> 
     new_id id1 l ifel; new_id id2 l ifel;
+    let sl = exp_to_smtlib e in
     (* let lh = if fvs = [] then [Leq(lo fvs id1 n ifel, hi fvs id1 n ifel); Leq(lo fvs id2 n ifel, hi fvs id2 n ifel)] else [] in *)
     [Or(And(Eq(Add(o_p id1 n ifel, o_p id2 n ifel), Add(o id1 n ifel, o id2 n ifel)),
-        And(Eq(Add(lo_p fvs id1 n ifel, Id (string_of_int i)), lo_p fvs id2 n ifel),
-        And(Eq(Add(lo_p fvs id1 n ifel, Id (string_of_int i)), Add(lo fvs id1 n ifel, Id (string_of_int i))),
+        And(Eq(Add(lo_p fvs id1 n ifel, sl), lo_p fvs id2 n ifel),
+        And(Eq(Add(lo_p fvs id1 n ifel, sl), Add(lo fvs id1 n ifel, sl)),
         And(Eq(lo_p fvs id2 n ifel, lo fvs id2 n ifel),
-        And(Eq(Add(hi_p fvs id1 n ifel, Id (string_of_int i)), hi_p fvs id2 n ifel),
-        And(Eq(Add(hi_p fvs id1 n ifel, Id (string_of_int i)), Add(hi fvs id1 n ifel, Id (string_of_int i))),
+        And(Eq(Add(hi_p fvs id1 n ifel, sl), hi_p fvs id2 n ifel),
+        And(Eq(Add(hi_p fvs id1 n ifel, sl), Add(hi fvs id1 n ifel, sl)),
             Eq(hi_p fvs id2 n ifel, hi fvs id2 n ifel))))))),
      Or(And(Eq(Add(o_p id1 n ifel, o_p id2 n ifel), o id1 n ifel),
         And(Eq(Add(o_p id1 n ifel, o_p id2 n ifel), o id2 n ifel),
-        And(Eq(Add(lo_p fvs id1 n ifel, Id (string_of_int i)), lo_p fvs id2 n ifel),
-        And(Eq(Add(hi_p fvs id1 n ifel, Id (string_of_int i)), hi_p fvs id2 n ifel),
-            Or(And(Eq(Add(lo_p fvs id1 n ifel, Id (string_of_int i)), Add(lo fvs id1 n ifel, Id (string_of_int i))), 
+        And(Eq(Add(lo_p fvs id1 n ifel, sl), lo_p fvs id2 n ifel),
+        And(Eq(Add(hi_p fvs id1 n ifel, sl), hi_p fvs id2 n ifel),
+            Or(And(Eq(Add(lo_p fvs id1 n ifel, sl), Add(lo fvs id1 n ifel, sl)), 
                And(Eq(hi_p fvs id2 n ifel, hi fvs id2 n ifel),
-                   Eq(Add(Add(hi fvs id1 n ifel, Id (string_of_int i)), Id "1"), lo fvs id2 n ifel))),
-               And(Eq(Add(lo_p fvs id1 n ifel, Id (string_of_int i)), lo fvs id2 n ifel), 
-               And(Eq(hi_p fvs id2 n ifel, Add(hi fvs id1 n ifel, Id (string_of_int i))),
-                   Eq(Add(hi fvs id2 n ifel, Id "1"), Add(lo fvs id1 n ifel, Id (string_of_int i)))))))))),
+                   Eq(Add(Add(hi fvs id1 n ifel, sl), Id "1"), lo fvs id2 n ifel))),
+               And(Eq(Add(lo_p fvs id1 n ifel, sl), lo fvs id2 n ifel), 
+               And(Eq(hi_p fvs id2 n ifel, Add(hi fvs id1 n ifel, sl)),
+                   Eq(Add(hi fvs id2 n ifel, Id "1"), Add(lo fvs id1 n ifel, sl))))))))),
      Or(And(Eq(o_p id1 n ifel, Add(o id1 n ifel, o id2 n ifel)),
         And(Eq(o_p id2 n ifel, Add(o id1 n ifel, o id2 n ifel)),
-        And(Eq(Add(lo fvs id1 n ifel, Id (string_of_int i)), lo fvs id2 n ifel),
-        And(Eq(Add(hi fvs id1 n ifel, Id (string_of_int i)), hi fvs id2 n ifel),
-            Or(And(Eq(Add(lo_p fvs id1 n ifel, Id (string_of_int i)), Add(lo fvs id1 n ifel, Id (string_of_int i))), 
+        And(Eq(Add(lo fvs id1 n ifel, sl), lo fvs id2 n ifel),
+        And(Eq(Add(hi fvs id1 n ifel, sl), hi fvs id2 n ifel),
+            Or(And(Eq(Add(lo_p fvs id1 n ifel, sl), Add(lo fvs id1 n ifel, sl)), 
                And(Eq(hi_p fvs id2 n ifel, hi fvs id2 n ifel),
-                   Eq(Add(Add(hi_p fvs id1 n ifel, Id (string_of_int i)), Id "1"), lo_p fvs id2 n ifel))),
-               And(Eq(lo_p fvs id2 n ifel, Add(lo fvs id1 n ifel, Id (string_of_int i))), 
-               And(Eq(Add(hi_p fvs id1 n ifel, Id (string_of_int i)), hi fvs id2 n ifel),
-                   Eq(Add(hi_p fvs id2 n ifel, Id "1"), Add(lo_p fvs id1 n ifel, Id (string_of_int i)))))))))),
+                   Eq(Add(Add(hi_p fvs id1 n ifel, sl), Id "1"), lo_p fvs id2 n ifel))),
+               And(Eq(lo_p fvs id2 n ifel, Add(lo fvs id1 n ifel, sl)), 
+               And(Eq(Add(hi_p fvs id1 n ifel, sl), hi fvs id2 n ifel),
+                   Eq(Add(hi_p fvs id2 n ifel, Id "1"), Add(lo_p fvs id1 n ifel, sl))))))))),
         And(Eq(o_p id1 n ifel, o id1 n ifel),
         And(Eq(o_p id2 n ifel, o id2 n ifel),
         And(Eq(o id1 n ifel, o id2 n ifel),
-            Or(And(Eq(Add(lo_p fvs id1 n ifel, Id (string_of_int i)), Add(lo fvs id1 n ifel, Id (string_of_int i))), 
+            Or(And(Eq(Add(lo_p fvs id1 n ifel, sl), Add(lo fvs id1 n ifel, sl)), 
                And(Eq(hi_p fvs id2 n ifel, hi fvs id2 n ifel),
-               And(Eq(Add(Add(hi_p fvs id1 n ifel, Id (string_of_int i)), Id "1"), lo_p fvs id2 n ifel),
-                   Eq(Add(Add(hi fvs id1 n ifel, Id (string_of_int i)), Id "1"), lo fvs id2 n ifel)))),
-            Or(And(Eq(Add(lo_p fvs id1 n ifel, Id (string_of_int i)), lo fvs id2 n ifel), 
-               And(Eq(hi_p fvs id2 n ifel, Add(hi fvs id1 n ifel, Id (string_of_int i))),
-               And(Eq(Add(Add(hi_p fvs id1 n ifel, Id (string_of_int i)), Id "1"), lo_p fvs id2 n ifel),
-                   Eq(Add(hi fvs id2 n ifel, Id "1"), Add(lo fvs id1 n ifel, Id (string_of_int i)))))),
-            Or(And(Eq(lo_p fvs id2 n ifel, Add(lo fvs id1 n ifel, Id (string_of_int i))), 
-               And(Eq(Add(hi_p fvs id1 n ifel, Id (string_of_int i)), hi fvs id2 n ifel),
-               And(Eq(Add(hi_p fvs id2 n ifel, Id "1"), Add(lo_p fvs id1 n ifel, Id (string_of_int i))),
-                   Eq(Add(Add(hi fvs id1 n ifel, Id (string_of_int i)), Id "1"), lo fvs id2 n ifel)))),
+               And(Eq(Add(Add(hi_p fvs id1 n ifel, sl), Id "1"), lo_p fvs id2 n ifel),
+                   Eq(Add(Add(hi fvs id1 n ifel, sl), Id "1"), lo fvs id2 n ifel)))),
+            Or(And(Eq(Add(lo_p fvs id1 n ifel, sl), lo fvs id2 n ifel), 
+               And(Eq(hi_p fvs id2 n ifel, Add(hi fvs id1 n ifel, sl)),
+               And(Eq(Add(Add(hi_p fvs id1 n ifel, sl), Id "1"), lo_p fvs id2 n ifel),
+                   Eq(Add(hi fvs id2 n ifel, Id "1"), Add(lo fvs id1 n ifel, sl))))),
+            Or(And(Eq(lo_p fvs id2 n ifel, Add(lo fvs id1 n ifel, sl)), 
+               And(Eq(Add(hi_p fvs id1 n ifel, sl), hi fvs id2 n ifel),
+               And(Eq(Add(hi_p fvs id2 n ifel, Id "1"), Add(lo_p fvs id1 n ifel, sl)),
+                   Eq(Add(Add(hi fvs id1 n ifel, sl), Id "1"), lo fvs id2 n ifel)))),
                And(Eq(lo_p fvs id2 n ifel, lo fvs id2 n ifel), 
-               And(Eq(Add(hi_p fvs id1 n ifel, Id (string_of_int i)), Add(hi fvs id1 n ifel, Id (string_of_int i))),
-               And(Eq(Add(hi_p fvs id2 n ifel, Id "1"), Add(lo_p fvs id1 n ifel, Id (string_of_int i))),
-                   Eq(Add(hi fvs id2 n ifel, Id "1"), Add(lo fvs id1 n ifel, Id (string_of_int i)))))))))))))))]
+               And(Eq(Add(hi_p fvs id1 n ifel, sl), Add(hi fvs id1 n ifel, sl)),
+               And(Eq(Add(hi_p fvs id2 n ifel, Id "1"), Add(lo_p fvs id1 n ifel, sl)),
+                   Eq(Add(hi fvs id2 n ifel, Id "1"), Add(lo fvs id1 n ifel, sl))))))))))))))]
      @ [Leq(lo fvs id1 n ifel, hi fvs id1 n ifel); Leq(lo fvs id2 n ifel, hi fvs id2 n ifel)]
   | CDeref (id,l) -> 
     [Gt(o id n ifel, Id "0");
@@ -305,7 +321,7 @@ let rec constr_to_smtlib fvs n fun_num ifel c =
       match ftid_ft, arg with
       | (RawId id_ptr, FTRef (_,ENull,ENull,_)), AId id ->
         let num = lookup id_fn fun_num in
-        varown_count := (id_ptr, "b", num) :: !varown_count;
+        (* varown_count := (id_ptr, "b", num) :: !varown_count; *)
         let fvs' = union_list (List.map fst subst) fvs in
         let sll = lo_be fvs' id_ptr num "b" in
         let slh = hi_be fvs' id_ptr num "b" in
@@ -328,7 +344,7 @@ let rec constr_to_smtlib fvs n fun_num ifel c =
       match ftid_ft, arg with
       | (RawId id_ptr, FTRef (_,ENull,ENull,_)), AId id ->
         let num = lookup id_fn fun_num in
-        varown_count := (id_ptr, "e", num) :: !varown_count;
+        (* varown_count := (id_ptr, "e", num) :: !varown_count; *)
         let fvs' = union_list (List.map fst subst) fvs in
         let sll = lo_be fvs' id_ptr num "e" in
         let slh = hi_be fvs' id_ptr num "e" in
@@ -379,6 +395,7 @@ let ics_to_smtlib ics n fun_num =
     let (el1,eh1,f1) = assoc_ft id ftid_fts1 in 
     match el1 with
     | ENull ->
+      varown_count := (id, "b", n) :: !varown_count;
       [Eq(o id n [], o_be id n "b");
        Eq(lo fvs id n [], lo_be fvs id n "b");
        Eq(hi fvs id n [], hi_be fvs id n "b")]
@@ -393,13 +410,14 @@ let ics_to_smtlib ics n fun_num =
     let (el2,eh2,f2) = assoc_ft id ftid_fts2 in 
     match el2 with
     | ENull ->
-      [Geq(o id n [], o_be id n "e");
-       Leq(lo fvs id n [], lo_be fvs id n "e");
-       Geq(hi fvs id n [], hi_be fvs id n "e")]
+      varown_count := (id, "e", n) :: !varown_count;
+      [Leq(o_be id n "e", o id n []);
+       Geq(lo_be fvs id n "e", lo fvs id n []);
+       Leq(hi_be fvs id n "e", hi fvs id n [])]
     | _ ->
-      [Geq(o id n [], Id (string_of_float f2));
-       Leq(lo fvs id n [], exp_to_smtlib el2);
-       Geq(hi fvs id n [], exp_to_smtlib eh2)]
+      [Leq(Id (string_of_float f2), o id n []);
+       Geq(exp_to_smtlib el2, lo fvs id n []);
+       Leq(exp_to_smtlib eh2, hi fvs id n [])]
   in
   let s2 = List.concat (List.map g2 ref_ids) in
   let g_lh (id, (i,ifel)) =

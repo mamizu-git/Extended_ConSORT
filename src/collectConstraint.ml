@@ -27,9 +27,14 @@ let rec collect_exp env f_id args l exp =
   | ELetDerefPtr (id1,id2,e) ->
     let c = collect_exp env f_id args (l+1) e in
     CLetDeref(id1, id2, l) :: c
-  | ELetAddPtr (id1,id2,i,e) ->
-    let c = collect_exp env f_id args (l+1) e in
-    CLetAddPtr(id1, id2, i, l) :: c
+  | ELetAddPtr (id1,id2,e1,e2) ->
+    let c1 = collect_exp env f_id args l e1 in
+    let c2 = collect_exp env f_id args (l+1) e2 in
+    CLetAddPtr(id1, id2, elim_v env f_id args e1, l) :: c1 @ c2
+  | ELetSubPtr (id1,id2,e1,e2) ->
+    let c1 = collect_exp env f_id args l e1 in
+    let c2 = collect_exp env f_id args (l+1) e2 in
+    CLetSubPtr(id1, id2, elim_v env f_id args e1, l) :: c1 @ c2
   | EMkarray (id,i,e) ->
     let c = collect_exp env f_id args (l+1) e in
     CMkArray(id, i, l) :: c
@@ -46,9 +51,10 @@ let rec collect_exp env f_id args l exp =
   | EAliasDerefPtr (id1,id2,e) -> 
     let c = collect_exp env f_id args (l+1) e in
     CAliasDeref(id1, id2, l) :: c
-  | EAliasAddPtr (id1,id2,i,e) -> 
-    let c = collect_exp env f_id args (l+1) e in
-    CAliasAddPtr(id1, id2, i, l) :: c
+  | EAliasAddPtr (id1,id2,e1,e2) -> 
+    let c1 = collect_exp env f_id args l e1 in
+    let c2 = collect_exp env f_id args (l+1) e2 in
+    CAliasAddPtr(id1, id2, elim_v env f_id args e1, l) :: c1 @ c2
   | EAssert (e1,e2) ->
     let c1 = collect_exp env f_id args l e1 in
     let c2 = collect_exp env f_id args (l+1) e2 in

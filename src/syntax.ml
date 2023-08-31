@@ -33,7 +33,8 @@ type exp =
   | ELetInt of id * exp * exp
   | ELetVarPtr of id * id * exp
   | ELetDerefPtr of id * id * exp
-  | ELetAddPtr of id * id * int * exp
+  | ELetAddPtr of id * id * exp * exp
+  | ELetSubPtr of id * id * exp * exp
   | EIf of exp * exp * exp
   | EMkarray of id * int * exp
   | EAssign of id * exp * exp
@@ -42,7 +43,7 @@ type exp =
   | EAlias of exp * exp * exp
   | EAliasVarPtr of id * id * exp
   | EAliasDerefPtr of id * id * exp
-  | EAliasAddPtr of id * id * int * exp
+  | EAliasAddPtr of id * id * exp * exp
   | EAssert of exp * exp
   | ESeq of exp * exp
   | EDeref of id
@@ -63,6 +64,7 @@ type exp =
   | EConstUnit
   | EConstFail
   | EConstInt of int
+  | EConstRandInt
   | EConstTrue
   | EConstFalse
   | EVar of id
@@ -84,13 +86,14 @@ type constr =
   | CIf of exp * constr list * constr list * pos
   | CLet of id * id * pos
   | CLetDeref of id * id * pos
-  | CLetAddPtr of id * id * int * pos (* let p = q + x in ができない*)
+  | CLetAddPtr of id * id * exp * pos (* let p = q + x in ができない -> できるように *)
+  | CLetSubPtr of id * id * exp * pos
   | CMkArray of id * int * pos
   | CAssignInt of id * pos
   | CAssignRef of id * id * pos
   | CAlias of id * id * pos
   | CAliasDeref of id * id * pos
-  | CAliasAddPtr of id * id * int * pos
+  | CAliasAddPtr of id * id * exp * pos
   | CDeref of id * pos
   | CApp of id * arg list * pos
 and arg = 
@@ -102,13 +105,14 @@ type chc =
   | CHCLetInt of id * exp * pos
   | CHCLet of id * id * pos
   | CHCLetDeref of id * id * pos
-  | CHCLetAddPtr of id * id * int * pos (* let p = q + x in ができない*)
+  | CHCLetAddPtr of id * id * exp * pos (* let p = q + x in ができない -> できるように *)
+  | CHCLetSubPtr of id * id * exp * pos
   | CHCMkArray of id * int * pos
   | CHCAssignInt of id * exp * pos
   | CHCAssignRef of id * id * pos
   | CHCAlias of id * id * pos
   | CHCAliasDeref of id * id * pos
-  | CHCAliasAddPtr of id * id * int * pos
+  | CHCAliasAddPtr of id * id * exp * pos
   | CHCAssert of exp * pos
   | CHCApp of id * exp list * pos
 
@@ -191,7 +195,7 @@ let rec print_smtlib oc sl bool_id n num =
      print_smtlib oc s2 bool_id n num;
      output_string oc ")")
   | Div (s1,s2) -> 
-    (output_string oc "(/ ";
+    (output_string oc "(div ";
      print_smtlib oc s1 bool_id n num;
      output_string oc " ";
      print_smtlib oc s2 bool_id n num;
@@ -262,13 +266,21 @@ let rec print_exp exp =
      print_string ", ";
      print_exp e;
      print_string ")")
-  | ELetAddPtr (id1,id2,i,e) ->
+  | ELetAddPtr (id1,id2,e1,e2) ->
     (print_string ("ELetAddPtr(" ^ id1 ^ ", ");
      print_string id2;
      print_string ", ";
-     print_int i;
+     print_exp e1;
      print_string ", ";
-     print_exp e;
+     print_exp e2;
+     print_string ")")
+  | ELetSubPtr (id1,id2,e1,e2) ->
+    (print_string ("ELetSubPtr(" ^ id1 ^ ", ");
+     print_string id2;
+     print_string ", ";
+     print_exp e1;
+     print_string ", ";
+     print_exp e2;
      print_string ")")
   | EIf (e1,e2,e3) ->
     (print_string "EIf(";
@@ -326,7 +338,7 @@ let rec print_exp exp =
     (print_string ("EAliasAddPtr(" ^ id1 ^ ", ");
      print_string id2;
      print_string ", ";
-     print_int i;
+     print_exp exp;
      print_string ", ";
      print_exp e;
      print_string ")")
@@ -430,6 +442,8 @@ let rec print_exp exp =
     print_string "fail"
   | EConstInt i ->
     print_int i
+  | EConstRandInt ->
+    print_string "randInt"
   | EConstTrue ->
     print_string "true"
   | EConstFalse ->
@@ -530,11 +544,19 @@ let rec print_constraint c =
      print_string " | ";
      print_int l;
      print_string ")")
-  | CLetAddPtr (id1,id2,i,l) -> 
+  | CLetAddPtr (id1,id2,e,l) -> 
     (print_string ("CLetAddPtr(" ^ id1 ^ ", ");
      print_string id2;
      print_string ", ";
-     print_int i;
+     print_exp e;
+     print_string " | "; 
+     print_int l;
+     print_string ")")
+  | CLetSubPtr (id1,id2,e,l) -> 
+    (print_string ("CLetSubPtr(" ^ id1 ^ ", ");
+     print_string id2;
+     print_string ", ";
+     print_exp e;
      print_string " | "; 
      print_int l;
      print_string ")")
@@ -566,11 +588,11 @@ let rec print_constraint c =
      print_string " | ";
      print_int l;
      print_string ")")
-  | CAliasAddPtr (id1,id2,i,l) -> 
+  | CAliasAddPtr (id1,id2,e,l) -> 
     (print_string ("CAliasAddPtr(" ^ id1 ^ ", ");
      print_string id2;
      print_string ", ";
-     print_int i;
+     print_exp e;
      print_string " | ";
      print_int l;
      print_string ")")
@@ -837,11 +859,19 @@ let rec print_chc c =
      print_string " | ";
      print_int l;
      print_string ")")
-  | CHCLetAddPtr (id1,id2,i,l) -> 
+  | CHCLetAddPtr (id1,id2,e,l) -> 
     (print_string ("CHCLetAddPtr(" ^ id1 ^ ", ");
      print_string id2;
      print_string ", ";
-     print_int i;
+     print_exp e;
+     print_string " | "; 
+     print_int l;
+     print_string ")")
+  | CHCLetSubPtr (id1,id2,e,l) -> 
+    (print_string ("CHCLetSubPtr(" ^ id1 ^ ", ");
+     print_string id2;
+     print_string ", ";
+     print_exp e;
      print_string " | "; 
      print_int l;
      print_string ")")
@@ -875,11 +905,11 @@ let rec print_chc c =
      print_string " | ";
      print_int l;
      print_string ")")
-  | CHCAliasAddPtr (id1,id2,i,l) -> 
+  | CHCAliasAddPtr (id1,id2,e,l) -> 
     (print_string ("CHCAliasAddPtr(" ^ id1 ^ ", ");
      print_string id2;
      print_string ", ";
-     print_int i;
+     print_exp e;
      print_string " | ";
      print_int l;
      print_string ")")

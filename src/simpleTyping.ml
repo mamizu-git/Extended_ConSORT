@@ -110,6 +110,8 @@ let rec infer_exp tyenv exp =
     (TyUnit, [])
   | EConstInt i ->
     (TyInt, [])
+  | EConstRandInt ->
+    (TyInt, [])
   | EConstTrue ->
     (TyBool, [])
   | EConstFalse ->

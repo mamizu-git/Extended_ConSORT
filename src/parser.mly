@@ -210,6 +210,8 @@ exp:
   { EConstFail }
 | int 
   { EConstInt($1) }
+| UNDERSCORE
+  { EConstRandInt }
 | TRUE
   { EConstTrue }
 | FALSE

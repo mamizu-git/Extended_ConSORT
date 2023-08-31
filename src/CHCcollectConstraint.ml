@@ -28,9 +28,14 @@ let rec chc_collect_exp env f_id args l exp =
   | ELetDerefPtr (id1,id2,e) ->
     let c = chc_collect_exp env f_id args (l+1) e in
     CHCLetDeref(id1, id2, l) :: c
-  | ELetAddPtr (id1,id2,i,e) ->
-    let c = chc_collect_exp env f_id args (l+1) e in
-    CHCLetAddPtr(id1, id2, i, l) :: c
+  | ELetAddPtr (id1,id2,e1,e2) ->
+    let c1 = chc_collect_exp env f_id args l e1 in
+    let c2 = chc_collect_exp env f_id args (l+1) e2 in
+    CHCLetAddPtr(id1, id2, e1, l) :: c1 @ c2
+  | ELetSubPtr (id1,id2,e1,e2) ->
+    let c1 = chc_collect_exp env f_id args l e1 in
+    let c2 = chc_collect_exp env f_id args (l+1) e2 in
+    CHCLetSubPtr(id1, id2, e1, l) :: c1 @ c2
   | EMkarray (id,i,e) ->
     let c = chc_collect_exp env f_id args (l+1) e in
     CHCMkArray(id, i, l) :: c
@@ -48,9 +53,10 @@ let rec chc_collect_exp env f_id args l exp =
   | EAliasDerefPtr (id1,id2,e) -> 
     let c = chc_collect_exp env f_id args (l+1) e in
     CHCAliasDeref(id1, id2, l) :: c
-  | EAliasAddPtr (id1,id2,i,e) -> 
-    let c = chc_collect_exp env f_id args (l+1) e in
-    CHCAliasAddPtr(id1, id2, i, l) :: c
+  | EAliasAddPtr (id1,id2,e1,e2) -> 
+    let c1 = chc_collect_exp env f_id args l e1 in
+    let c2 = chc_collect_exp env f_id args (l+1) e2 in
+    CHCAliasAddPtr(id1, id2, e1, l) :: c1 @ c2
   | EAssert (e1,e2) ->
     (* let c1 = chc_collect_exp env f_id args l e1 in *)
     let c2 = chc_collect_exp env f_id args (l+1) e2 in

@@ -44,6 +44,10 @@ let find_subst ftid_ft e =
 
 let varpred_count = ref []
 
+let my_string_of_int i = 
+  if i >= 0 then string_of_int i 
+  else "(" ^ string_of_int i ^ ")"
+
 let rec find_id_count ifel id_count res = 
   match id_count with
   | [] -> res
@@ -172,6 +176,9 @@ let rec emit_chc fvs fun_num ifel c =
          | _ -> raise ConstrError
        in
        sl_ret :: ss1 @ ss2
+     | EConstRandInt ->
+       intpred_env := (id, []) :: !intpred_env;
+       [Imply((Id "true"), IntPred(id, ["v"]))]
      | e -> 
        let fvs = fvs_of_exp e in
        let rec find_hash fvs h r = 
@@ -194,10 +201,26 @@ let rec emit_chc fvs fun_num ifel c =
      print_string " | ";
      print_int l;
      print_string ")") *)
-  | CHCLetAddPtr (id1,id2,i,l) -> 
+  | CHCLetAddPtr (id1,id2,e,l) -> 
     new_id id1 l ifel; new_id id2 l ifel;
-    [Imply(ptrpred_p id2 (FV "i") (FV "n") ifel, ptrpred id2 (FV "i") (FV "n") ifel);
-     Imply(ptrpred_p id2 (FV "i") (FV "n") ifel, ptrpred id1 (Sub((FV "i"), (Id (string_of_int i)))) (FV "n") ifel)] 
+    (match e with
+     | EConstInt i ->
+       [Imply(ptrpred_p id2 (FV "i") (FV "n") ifel, ptrpred id2 (FV "i") (FV "n") ifel);
+        Imply(ptrpred_p id2 (FV "i") (FV "n") ifel, ptrpred id1 (Sub((FV "i"), (Id (my_string_of_int i)))) (FV "n") ifel)]
+     | EVar x -> 
+       [Imply(ptrpred_p id2 (FV "i") (FV "n") ifel, ptrpred id2 (FV "i") (FV "n") ifel);
+        Imply(IntPred(x, [x;"n"]), Imply(ptrpred_p id2 (FV "i") (FV "n") ifel, ptrpred id1 (Sub((FV "i"), (FV x))) (FV "n") ifel))] (**)
+    )
+  | CHCLetSubPtr (id1,id2,e,l) -> 
+    new_id id1 l ifel; new_id id2 l ifel;
+    (match e with
+     | EConstInt i ->
+       [Imply(ptrpred_p id2 (FV "i") (FV "n") ifel, ptrpred id2 (FV "i") (FV "n") ifel);
+        Imply(ptrpred_p id2 (FV "i") (FV "n") ifel, ptrpred id1 (Add((FV "i"), (Id (my_string_of_int i)))) (FV "n") ifel)]
+     | EVar x -> 
+       [Imply(ptrpred_p id2 (FV "i") (FV "n") ifel, ptrpred id2 (FV "i") (FV "n") ifel);
+        Imply(IntPred(x, [x;"n"]), Imply(ptrpred_p id2 (FV "i") (FV "n") ifel, ptrpred id1 (Add((FV "i"), (FV x))) (FV "n") ifel))] (**)
+    )
   | CHCMkArray (id,i,l) -> (* i いらない *)
     new_id id l ifel;
     [Imply(Id "true", ptrpred id (FV "i") (FV "n") ifel)]
@@ -233,10 +256,17 @@ let rec emit_chc fvs fun_num ifel c =
      print_string " | ";
      print_int l;
      print_string ")") *)
-  | CHCAliasAddPtr (id1,id2,i,l) -> 
+  | CHCAliasAddPtr (id1,id2,e,l) -> 
     new_id id1 l ifel; new_id id2 l ifel;
-    [Imply(And(ptrpred_p id2 (FV "i") (FV "n") ifel, ptrpred_p id1 (Sub((FV "i"), (Id (string_of_int i)))) (FV "n") ifel), ptrpred id2 (FV "i") (FV "n") ifel);
-     Imply(And(ptrpred_p id2 (FV "i") (FV "n") ifel, ptrpred_p id1 (Sub((FV "i"), (Id (string_of_int i)))) (FV "n") ifel), ptrpred id1 (Sub((FV "i"), (Id (string_of_int i)))) (FV "n") ifel)]
+    (match e with
+     | EConstInt i ->
+       [Imply(And(ptrpred_p id2 (FV "i") (FV "n") ifel, ptrpred_p id1 (Sub((FV "i"), (Id (my_string_of_int i)))) (FV "n") ifel), ptrpred id2 (FV "i") (FV "n") ifel);
+        Imply(And(ptrpred_p id2 (FV "i") (FV "n") ifel, ptrpred_p id1 (Sub((FV "i"), (Id (my_string_of_int i)))) (FV "n") ifel), ptrpred id1 (Sub((FV "i"), (Id (my_string_of_int i)))) (FV "n") ifel)]   
+     | EVar x ->
+       [Imply(IntPred(x, [x;"n"]), Imply(And(ptrpred_p id2 (FV "i") (FV "n") ifel, ptrpred_p id1 (Sub((FV "i"), (FV x))) (FV "n") ifel), ptrpred id2 (FV "i") (FV "n") ifel));
+        Imply(IntPred(x, [x;"n"]), Imply(And(And(ptrpred_p id2 (FV "i") (FV "n") ifel, ptrpred_p id1 (Sub((FV "i"), (FV x))) (FV "n") ifel), IntPred(x, [x;"n"])), ptrpred id1 (Sub((FV "i"), (FV x))) (FV "n") ifel))] (**)
+    )
+
   | CHCAssert (e,l) -> 
     let fvs = fvs_of_exp e in
     if fvs = [] then

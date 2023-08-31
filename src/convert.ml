@@ -13,8 +13,8 @@ let rec g f_id exp =
       (match e1 with
        | EVar id1 -> ELetVarPtr(id, id1, g f_id e2)
        | EDeref id1 -> ELetDerefPtr(id, id1, g f_id e2)
-       | EAdd (EVar id1, EConstInt i) -> ELetAddPtr(id, id1, i, g f_id e2) 
-       | ESub (EVar id1, EConstInt i) -> ELetAddPtr(id, id1, -i, g f_id e2)
+       | EAdd (EVar id1, e) -> ELetAddPtr(id, id1, e, g f_id e2) 
+       | ESub (EVar id1, e) -> ELetSubPtr(id, id1, e, g f_id e2) 
        | _ -> raise ConvertError)
   | EAssign (id,e1,e2) ->
     if lookup id (lookup f_id !all_tyenv) = TyRef (TyInt) then 
@@ -27,8 +27,8 @@ let rec g f_id exp =
     (match e2 with
      | EVar id2 -> EAliasVarPtr(id1, id2, g f_id e3)
      | EDeref id2 -> EAliasDerefPtr(id1, id2, g f_id e3)
-     | EAdd (EVar id2, EConstInt i) -> EAliasAddPtr(id1, id2, i, g f_id e3)
-     | ESub (EVar id2, EConstInt i) -> EAliasAddPtr(id1, id2, -i, g f_id e3)
+     | EAdd (EVar id2, e) -> EAliasAddPtr(id1, id2, e, g f_id e3)
+     | ESub (EVar id2, e) -> EAliasAddPtr(id2, id1, e, g f_id e3) (**)
      | _ -> raise ConvertError)
   | EIf (e1,e2,e3) -> EIf(g f_id e1, g f_id e2, g f_id e3)
   | EMkarray (id,i,e) -> EMkarray(id, i, g f_id e)

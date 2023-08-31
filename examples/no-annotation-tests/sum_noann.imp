@@ -3,11 +3,13 @@ sum(n, p)
   <#n: int, p: int ref | int> ]
 {
   if n <= 0 then {
-    0
+    let y = 0 in
+    y
   } else {
     let x = *p in
     if n = 1 then {
-      x
+      let y = x in
+      y
     } else {
       let q = p + 1 in
       let m = n - 1 in
@@ -18,13 +20,27 @@ sum(n, p)
   }
 }
 
+abs(m)
+[ <m: int> -> <m: int | int> ]
 {
+  if m >= 0 then {
+    let k = m in
+    k
+  } else {
+    let k = m * (-1) in
+    k
+  }
+}
+
+{
+  let rand = _ in
+  let a = abs(rand) in
   let p = mkarray 3 in
-  p := 0;
+  p := a;
   let q = p + 1 in
-  q := 1;
+  q := a;
   let r = q + 1 in
-  r := 2;
+  r := a;
   alias(r = q + 1);
   alias(q = p + 1);
   let m = 3 in
