@@ -1,5 +1,5 @@
 sum3(n, p) 
-[ <#n: int, p: int ref > -> 
+[ <#n: int, p: int ref> -> 
   <#n: int, p: int ref | int> ]
 {
   if n <= 0 then {
@@ -13,23 +13,50 @@ sum3(n, p)
       let q = p + m in
       let y = *q in
       let s = sum3(m, p) in
-      alias(q = p + m);
       let z = y + s in
       z
     } 
   }
 }
 
+abs(m)
+[ <m: int> -> <m: int | int> ]
+{
+  if m >= 0 then {
+    let k = m in
+    k
+  } else {
+    let k = m * (-1) in
+    k
+  }
+}
+
+init_x(n, x, p) 
+[ <#n: int, x: int, p: int ref> -> 
+  <#n: int, x: int, p: int ref | int> ]
+{
+  if n <= 0 then {
+    1
+  } else {
+    p := x;
+    if n = 1 then {
+      1
+    } else {
+      let q = p + 1 in
+      let m = n - 1 in
+      let d = init_x(m, x, q) in
+      alias(q = p + 1);
+      1
+    }
+  }
+}
+
 {
   let p = mkarray 3 in
-  p := 0;
-  let q = p + 1 in
-  q := 1;
-  let r = q + 1 in
-  r := 2;
-  alias(r = q + 1);
-  alias(q = p + 1);
   let m = 3 in
+  let rand = _ in
+  let z = abs(rand) in
+  let d = init_x(m, z, p) in
   let x = sum3(m, p) in
   assert(x >= 0);
   ()

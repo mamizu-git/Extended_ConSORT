@@ -1,4 +1,4 @@
-sum(n, p) 
+sum2(n, p) 
 [ <#n: int, p: int ref> -> 
   <#n: int, p: int ref | int> ]
 {
@@ -11,10 +11,22 @@ sum(n, p)
     } else {
       let q = p + 1 in
       let m = n - 1 in
-      let s = sum(m, q) in
+      let s = sum2(m, q) in
       let y = x + s in
       y
     }
+  }
+}
+
+abs(m)
+[ <m: int> -> <m: int | int> ]
+{
+  if m >= 0 then {
+    let k = m in
+    k
+  } else {
+    let k = m * (-1) in
+    k
   }
 }
 
@@ -41,9 +53,10 @@ init_x(n, x, p)
 {
   let p = mkarray 3 in
   let m = 3 in
-  let z = 1 in
+  let rand = _ in
+  let z = abs(rand) in
   let d = init_x(m, z, p) in
-  let x = sum(m, p) in
+  let x = sum2(m, p) in
   assert(x >= 0);
   ()
 }
