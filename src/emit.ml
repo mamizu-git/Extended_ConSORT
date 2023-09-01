@@ -148,7 +148,7 @@ let rec constr_to_smtlib fvs n fun_num ifel c =
      Geq(hi_p fvs id2 n ifel, hi fvs id1 n ifel);
      Geq(hi_p fvs id2 n ifel, hi fvs id2 n ifel);
      Leq(lo fvs id1 n ifel, hi fvs id1 n ifel);
-     Leq(lo fvs id2 n ifel, hi fvs id2 n ifel)]
+     Leq(lo fvs id2 n ifel, hi fvs id2 n ifel)] (* TODO?: fix o = 0. as minimum *)
   (* | CLetDeref (id1,id2,l) -> 
     (print_string ("CLetDeref(" ^ id1 ^ ", ");
      print_string id2;
@@ -167,7 +167,7 @@ let rec constr_to_smtlib fvs n fun_num ifel c =
      Leq(lo_p fvs id2 n ifel, Add(lo fvs id1 n ifel, sl));
      Leq(lo_p fvs id2 n ifel, lo fvs id2 n ifel);
      Geq(hi_p fvs id2 n ifel, Add(hi fvs id1 n ifel, sl));
-     Geq(hi_p fvs id2 n ifel, hi fvs id2 n ifel)]
+     Geq(hi_p fvs id2 n ifel, hi fvs id2 n ifel)]  (* TODO?: fix o = 0. as minimum *)
      (* @ [Leq(lo fvs id1 n ifel, hi fvs id1 n ifel); Leq(lo fvs id2 n ifel, hi fvs id2 n ifel)]  *)
   | CLetSubPtr (id1,id2,e,l) -> 
     new_id id1 l ifel; new_id id2 l ifel;
@@ -181,7 +181,7 @@ let rec constr_to_smtlib fvs n fun_num ifel c =
      Leq(lo_p fvs id2 n ifel, Sub(lo fvs id1 n ifel, sl));
      Leq(lo_p fvs id2 n ifel, lo fvs id2 n ifel);
      Geq(hi_p fvs id2 n ifel, Sub(hi fvs id1 n ifel, sl));
-     Geq(hi_p fvs id2 n ifel, hi fvs id2 n ifel)]
+     Geq(hi_p fvs id2 n ifel, hi fvs id2 n ifel)]  (* TODO?: fix o = 0. as minimum *)
      (* @ [Leq(lo fvs id1 n ifel, hi fvs id1 n ifel); Leq(lo fvs id2 n ifel, hi fvs id2 n ifel)]  *)
   | CMkArray (id,i,l) -> 
     new_id id l ifel;
