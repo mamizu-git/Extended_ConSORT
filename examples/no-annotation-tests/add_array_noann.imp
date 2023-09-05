@@ -23,6 +23,18 @@ add_array(n, p, q, r)
   }
 }
 
+abs(m)
+[ <m: int> -> <m: int | int> ]
+{
+  if m >= 0 then {
+    let k = m in
+    k
+  } else {
+    let k = m * (-1) in
+    k
+  }
+}
+
 init_x(n, x, p) 
 [ <#n: int, x: int, p: int ref> -> 
   <#n: int, x: int, p: int ref | int > ]
@@ -44,16 +56,16 @@ init_x(n, x, p)
 }
 
 {
-  let p = mkarray 5 in
-  let q = mkarray 5 in
-  let r = mkarray 5 in
-  let m = 5 in
-  let x = 1 in
-  let y = 2 in
-  let d = init_x(m, x, p) in
-  let d1 = init_x(m, y, q) in
+  let p = mkarray 10 in
+  let q = mkarray 10 in
+  let r = mkarray 10 in
+  let m = 10 in
+  let rand = _ in
+  let z = abs(rand) in
+  let d = init_x(m, z, p) in
+  let d1 = init_x(m, z, q) in
   let d2 = add_array(m, p, q, r) in
   let rr = *r in
-  assert(rr > 0);
+  assert(rr >= 0);
   ()
 }

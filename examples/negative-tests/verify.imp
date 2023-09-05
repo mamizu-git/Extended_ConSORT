@@ -11,7 +11,7 @@ init_i(n, p)
     } else {
       let m = n - 1 in
       let q = p + m in
-      q := m;
+      q := 0;
       let d = init_i(m, p) in
       alias(q = p + m);
       1
@@ -34,7 +34,7 @@ verify(n, p)
       let m = n - 1 in
       let q = p + m in
       let y = *q in
-      assert(y = m);
+      assert(y = 0);
       let d = verify(m, p) in
       alias(q = p + m);
       1

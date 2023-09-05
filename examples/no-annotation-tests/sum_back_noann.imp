@@ -1,21 +1,33 @@
-squared_norm(n, p) 
+sum(n, p) 
 [ <#n: int, p: int ref> -> 
   <#n: int, p: int ref | int> ]
 {
   if n <= 0 then {
     0
   } else {
-    let x = *p in
-    let w = x * x in
     if n = 1 then {
-      w
+      let x = *p in
+      x
     } else {
-      let q = p + 1 in
       let m = n - 1 in
-      let r = squared_norm(m, q) in
-      let z = r + w in
+      let q = p + m in
+      let y = *q in
+      let s = sum(m, p) in
+      let z = y + s in
       z
-    }
+    } 
+  }
+}
+
+abs(m)
+[ <m: int> -> <m: int | int> ]
+{
+  if m >= 0 then {
+    let k = m in
+    k
+  } else {
+    let k = m * (-1) in
+    k
   }
 }
 
@@ -40,11 +52,12 @@ init_x(n, x, p)
 }
 
 {
-  let p = mkarray 3 in
-  let m = 3 in
-  let z = 1 in
+  let p = mkarray 1000 in
+  let m = 1000 in
+  let rand = _ in
+  let z = abs(rand) in
   let d = init_x(m, z, p) in
-  let x = squared_norm(m, p) in
+  let x = sum(m, p) in
   assert(x >= 0);
   ()
 }

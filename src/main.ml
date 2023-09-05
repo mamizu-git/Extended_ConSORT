@@ -11,7 +11,7 @@ open CHCcollectConstraint
 open CHCemit
 open Ownership
 
-let rec main_int_sub oc all_cs bool_id n iter = 
+let rec main_int_sub_declare oc all_cs bool_id n iter = 
   if n < 0 then 
     ()
   else
@@ -19,6 +19,13 @@ let rec main_int_sub oc all_cs bool_id n iter =
     print_declare oc id_count fvs n;
     print_declare_varown oc varown_count fvs n;
     output_string oc "\n";
+    main_int_sub_declare oc all_cs bool_id (n-1) iter)
+
+let rec main_int_sub oc all_cs bool_id n iter = 
+  if n < 0 then 
+    ()
+  else
+    (let (id_count, varown_count, fvs, sls) = all_cs_to_smtlib all_cs n in
     print_smtlibs oc sls bool_id fvs (-1) iter; 
     output_string oc "\n\n";
     main_int_sub oc all_cs bool_id (n-1) iter)
@@ -36,18 +43,21 @@ let main_int n iter =
   (* print_all_constraints all_cs; print_newline (); print_newline (); *)
 
   let oc1 = open_out "../experiment/out_int.smt2" in
+  main_int_sub_declare oc1 all_cs false n iter;
   main_int_sub oc1 all_cs false n iter;
   output_string oc1 "(check-sat)\n";
   output_string oc1 "(get-model)\n";
   close_out oc1;
 
   let oc2 = open_out "../experiment/out_fv_pre.smt2" in
+  main_int_sub_declare oc2 all_cs true n iter;
   main_int_sub oc2 all_cs true n iter;
   output_string oc2 "(check-sat)\n";
   output_string oc2 "(get-model)\n";
   close_out oc2;
 
   let oc3 = open_out "../experiment/out_int3.smt2" in
+  main_int_sub_declare oc3 all_cs false n iter;
   main_int_sub oc3 all_cs false n iter;
   output_string oc3 "(check-sat)\n";
   close_out oc3;
@@ -71,6 +81,7 @@ let main_fv n =
   
   let oc = open_out "../experiment/out_fv.smt2" in
   let oc2 = open_out "../experiment/out_fv2.smt2" in
+  main_int_sub_declare oc all_cs true n 0;
   main_int_sub oc all_cs true n 0;
   print_z3result oc z3res;
   output_string oc "\n\n";
@@ -78,6 +89,7 @@ let main_fv n =
   output_string oc "(get-model)\n";
   close_out oc;
 
+  main_int_sub_declare oc2 all_cs true n 0;
   main_int_sub oc2 all_cs true n 0;
   print_z3result oc2 z3res;
   output_string oc2 "\n\n";
@@ -86,7 +98,7 @@ let main_fv n =
 
   print_string "ownership: "
 
-let rec main_chc_sub oc all_chcs n = 
+let rec main_chc_sub_declare oc all_chcs n = 
   if n < 0 then 
     ()
   else
@@ -103,6 +115,21 @@ let rec main_chc_sub oc all_chcs n =
     print_declare_chc oc id_count n;
     print_declare_varpred oc varpred_count n;
     output_string oc "\n";
+    main_chc_sub_declare oc all_chcs (n-1))
+
+let rec main_chc_sub oc all_chcs n = 
+  if n < 0 then 
+    ()
+  else
+    (let oc_r2 = open_in @@ "../experiment/result" in
+    let z3res = Z3Parser2.result Z3Lexer2.read (Lexing.from_channel oc_r2) in
+    (* print_ownerships stdout z3res; *)
+    close_in oc_r2;
+    
+    let (id_count, varpred_count, fvs, sls) = all_cs_to_smtlib_chc all_chcs n in
+    let args_own_sls = ownexp_to_ownchc varpred_count n in
+    let own_sls = collect_ownchc z3res n in 
+
     print_smtlibs oc sls true fvs n 0; 
     output_string oc "\n";
     print_smtlibs oc args_own_sls true fvs n 0; 
@@ -128,12 +155,14 @@ let main_chc n =
   let oc = open_out "../experiment/out_chc.smt2" in
   let oc2 = open_out "../experiment/out_chc2.smt2" in
   output_string oc "(set-logic HORN)\n\n\n";
+  main_chc_sub_declare oc all_chcs n;
   main_chc_sub oc all_chcs n;
   output_string oc "(check-sat)\n";
   output_string oc "(get-model)\n";
   close_out oc;
 
   output_string oc2 "(set-logic HORN)\n\n\n";
+  main_chc_sub_declare oc2 all_chcs n;
   main_chc_sub oc2 all_chcs n;
   output_string oc2 "(check-sat)\n";
   close_out oc2;

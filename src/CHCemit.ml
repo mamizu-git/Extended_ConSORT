@@ -233,7 +233,8 @@ let rec emit_chc fvs fun_num ifel c =
               ptrpred id (FV "i") (FV "n") ifel)]
      (* | EApp (id',es) ->  *)
      | EVar x ->
-       [Imply(And(Imply(Eq((FV "i"), (Id "0")), IntPred(x, ["v"])), 
+       let vars = lookup x !intpred_env in
+       [Imply(And(Imply(Eq((FV "i"), (Id "0")), IntPred(x, "v" :: vars)), 
                   Imply(Not(Eq((FV "i"), (Id "0"))), ptrpred_p id (FV "i") (FV "n") ifel)),
               ptrpred id (FV "i") (FV "n") ifel)]
      | e -> (* EConstInt のみ？ *)
@@ -272,8 +273,8 @@ let rec emit_chc fvs fun_num ifel c =
     if fvs = [] then
       [exp_to_smtlib e]
     else
-      (List.iter (fun fv -> intpred_env := (fv, []) :: !intpred_env) fvs;
-      [Imply(Ands(List.map (fun fv -> IntPred(fv, [fv])) fvs), exp_to_smtlib e)])
+      (* (List.iter (fun fv -> intpred_env := (fv, []) :: !intpred_env) fvs; *)
+      [Imply(Ands(List.map (fun fv -> let vars = lookup fv !intpred_env in IntPred(fv, fv :: vars)) fvs), exp_to_smtlib e)]
   (* | CHCApp (id_fn,es,l) -> 
     let (ftid_fts1, ftid_fts2, ft_r) = lookup id_fn !fn_env_chc in
     let subst = List.concat (List.map2 find_subst ftid_fts1 es) in
