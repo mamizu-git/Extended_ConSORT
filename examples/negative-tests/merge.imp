@@ -1,0 +1,25 @@
+merge_array(m,n,p,q) { 
+  if n = 0 then {
+    ()
+  } else {
+    let p' = p + m in
+    p' := *q;
+    let q' = q + 1 in
+    alias(p' = p + m);
+    merge_array(m+1,n-1,p,q')
+  }
+}
+
+{
+  let p = mkarray(4) in
+  p[0] := *;
+  p[1] := *;
+  p[2] := *;
+  p[3] := *;
+  let q = mkarray(4) in
+  q[0] := 0;
+  q[1] := 1;
+  merge_array(2,2,p,q);
+  assert(p[2] = 0);
+  assert(p[3] = 1);
+}

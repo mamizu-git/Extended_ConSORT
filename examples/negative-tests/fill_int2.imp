@@ -1,0 +1,35 @@
+fill_int2(n, x, p) 
+[ <#n: { v : int | T }, x: { v : int | T }, p: { v : int | T } ref (0, n - 1, 1.0)> -> 
+  <#n: { v : int | T }, x: { v : int | T }, p: { v : int | (=> (and (>= i 0) (<= i (- n 1))) (= v x)) } ref (0, n - 1, 1.0) | unit> ]
+{
+  if n <= 0 then {
+    ()
+  } else {
+    p := x;
+    let q = p + 1 in
+    let m = n - 1 in
+    fill_int2(m, x, q);
+    alias(q = p + 1);
+    ()
+  }
+}
+
+{
+  let p = mkarray 3 in
+  p := 0;
+  let q = p + 1 in
+  q := 0;
+  let r = q + 1 in
+  r := 0;
+  alias(r = q + 1);
+  alias(q = p + 1);
+  let m = 3 in
+  let x = 1 in
+  fill_int2(m, x, p);
+  let pp = *p in
+  assert(pp = 1);
+  alias(q = p + 1);
+  let qq = *q in
+  assert(qq = 1);
+  ()
+}

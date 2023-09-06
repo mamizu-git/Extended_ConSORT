@@ -1,0 +1,75 @@
+copy_array(n, p, q)
+[ <#n: int, p: int ref, q: int ref> -> 
+  <#n: int, p: int ref, q: int ref | int> ]
+{
+  if n <= 0 then {
+    1
+  } else {
+    let x = *p in
+    q := x;
+    if n = 1 then {
+      1
+    } else {
+      let p1 = p + 1 in
+      let q1 = q + 1 in
+      let m = n - 1 in
+      let d = copy_array(m, p1, q1) in
+      alias(p1 = p + 1);
+      alias(q1 = q + 1);
+      1
+    }
+  }
+}
+
+abs(m)
+[ <m: int> -> <m: int | int> ]
+{
+  if m >= 0 then {
+    let k = m in
+    k
+  } else {
+    let k = m * (-1) in
+    k
+  }
+}
+
+init_x(n, x, p) 
+[ <#n: int, x: int, p: int ref> -> 
+  <#n: int, x: int, p: int ref | int> ]
+{
+  if n <= 0 then {
+    1
+  } else {
+    p := x;
+    if n = 1 then {
+      1
+    } else {
+      let q = p + 1 in
+      let m = n - 1 in
+      let d = init_x(m, x, q) in
+      alias(q = p + 1);
+      1
+    }
+  }
+}
+
+{
+  let p = mkarray 1000 in
+  let q = mkarray 1000 in
+  let m = 1000 in
+  let rand = _ in
+  let z = abs(rand) in
+  let d = init_x(m, z, p) in
+  let d = copy_array(m, p, q) in
+  let qq = *q in
+  assert(qq >= 0);
+  let q1 = q + 1 in
+  alias(q1 = q + 1);
+  let qq1 = *q1 in
+  assert(qq1 >= 0);
+  let q2 = q1 + 1 in
+  alias(q2 = q1 + 1);
+  let qq2 = *q2 in
+  assert(qq2 >= 0);
+  ()
+}
