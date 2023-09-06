@@ -56,7 +56,7 @@ let main_int n iter =
   output_string oc2 "(get-model)\n";
   close_out oc2;
 
-  let oc3 = open_out "../experiment/out_int3.smt2" in
+  let oc3 = open_out "../experiment/out_int2.smt2" in
   main_int_sub_declare oc3 all_cs false n iter;
   main_int_sub oc3 all_cs false n iter;
   output_string oc3 "(check-sat)\n";

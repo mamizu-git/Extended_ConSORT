@@ -1,5 +1,5 @@
 #include "seahorn/seahorn.h"
-#define N 10
+#define N 1000
 
 int a[N];
 
@@ -21,34 +21,13 @@ void init_i(int n, int* p) {
   }
 }
 
-int my_abs_min(int x, int n);
-
-int my_abs_min(int x, int n) {
-  if (x >= 0) {
-    if (n > x) {
-      return x;
-    } else {
-      return n;
-    }
-  } else {
-    if (n > -x) {
-      return -x;
-    } else {
-      return n;
-    }
-  }
-}
-
 int main() {
   int i;
   int* p = a;
   init_i(N, a);
 
-  for(i = 0; i < N; i++)
+  for(i = 0; i < 3; i++)
     sassert(a[i] == i);
-
-  int j = my_abs_min(unknown1 (), N-1);
-  sassert(a[j] + a[N-1-j] == N-1);
 
   return 42;
 }

@@ -19,6 +19,7 @@ do
 	done
 	./main chc $1 0
 	hoice ../experiment/out_chc2.smt2
+	# z3 fp.engine=spacer ../experiment/out_chc2.smt2
 	hoice ../experiment/out_chc.smt2 > ../experiment/chc_result
 	# z3 ../experiment/out_chc.smt2 > ../experiment/chc_result_sub
 done

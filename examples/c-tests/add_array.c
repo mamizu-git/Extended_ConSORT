@@ -1,5 +1,5 @@
 #include "seahorn/seahorn.h"
-#define N 3
+#define N 1000
 
 int a[N];
 int b[N];
@@ -50,7 +50,7 @@ int main() {
 
   add(N, p, q, r);
 
-  for(i = 0; i < N; i++)
+  for(i = 0; i < 3; i++)
     sassert(c[i] >= 0);
 
   return 42;

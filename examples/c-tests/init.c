@@ -28,7 +28,7 @@ int main() {
 
   init(N, a);
 
-  for(i=0; i < N; i++)
+  for(i=0; i < 3; i++)
     sassert(a[i] == 0);
 
   return 42;

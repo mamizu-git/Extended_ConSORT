@@ -233,12 +233,16 @@ let rec print_smtlib oc sl bool_id n num =
   | VarPred ->
     output_string oc "Pvar"
   | Ands sls -> 
-    (output_string oc "(and";
-     List.iter 
-       (fun sl ->
-          output_string oc " ";
-          print_smtlib oc sl bool_id n num) sls;
-     output_string oc ")")
+    match sls with
+    | [] -> output_string oc "true"
+    | sl :: [] -> print_smtlib oc sl bool_id n num
+    | _ -> 
+      (output_string oc "(and";
+       List.iter 
+         (fun sl ->
+            output_string oc " ";
+            print_smtlib oc sl bool_id n num) sls;
+       output_string oc ")")
 
 let rec print_exp exp =
   match exp with
