@@ -814,10 +814,12 @@ let print_declare_varpred oc varpred_count num =
    List.iter
      (fun sl ->
         match sl with
-        | IntVarPred(num',id,_) -> 
+        | IntVarPred(num',id,fvs) -> 
           if num' = num then 
             (output_string oc ("(declare-fun P" ^ string_of_int num ^ "_" ^ id);
-            output_string oc " ( Int ) Bool)\n")
+            output_string oc " ( Int ";
+            List.iter (fun _ -> output_string oc "Int ") fvs;
+            output_string oc (") Bool)\n"))
           else ()
         | PtrVarPred(num',id,be,_,_) -> 
           if num' = num then 

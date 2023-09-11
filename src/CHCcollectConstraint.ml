@@ -89,7 +89,7 @@ let chc_collect_fdef fdef =
   let (id, ids, ann, e) = fdef in
   let (ftid_fts1, ftid_fts2, ft) = ann in
   let args = List.map elim_hash (List.map fst ftid_fts1) in 
-  let e_rets = ret_of_exp e in
+  let e_rets = ret_of_exp [] e in
   fn_env_chc := (id, (ftid_fts1, ftid_fts2, ft)) :: !fn_env_chc;
   (id, chc_collect_exp [] id args 1 e, e_rets)
 

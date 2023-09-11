@@ -163,22 +163,28 @@ let rec emit_chc fvs fun_num ifel c =
          | _ -> raise ConstrError
        in
        let ss2 = List.concat (List.map2 g2 ftid_fts2 es) in
+       let find_fv' ftid_ft e = 
+         match ftid_ft, e with
+         | (HashId id, _), EVar x -> [x]
+         | _ -> []
+       in
+       let fvs' = List.concat (List.map2 find_fv' ftid_fts1 es) in
        let sl_ret = 
          match ft_r with
          | FTInt VarPred -> 
            intpred_env := (id, []) :: !intpred_env;
            let num = lookup id' fun_num in
-           varpred_count := (IntVarPred(num, "ret", []), (EConstUnit, EConstUnit, 0.)) :: !varpred_count;
-           Imply(IntVarPred(num, "ret", ["v"]), IntPred(id, ["v"])) 
+           (* varpred_count := (IntVarPred(num, "ret", fvs'), (EConstUnit, EConstUnit, 0.)) :: !varpred_count; *)
+           Imply(Ands(IntVarPred(num, "ret", id :: fvs') :: (List.map (fun fv -> IntPred(fv, fv :: (lookup fv !intpred_env))) fvs')), IntPred(id, [id])) 
          | FTInt sl -> 
            intpred_env := (id, []) :: !intpred_env; 
-           Imply(sl, IntPred(id, ["v"])) 
+           Imply(sl, IntPred(id, [id])) 
          | _ -> raise ConstrError
        in
        sl_ret :: ss1 @ ss2
      | EConstRandInt ->
        intpred_env := (id, []) :: !intpred_env;
-       [Imply((Id "true"), IntPred(id, ["v"]))]
+       [Imply((Id "true"), IntPred(id, [id]))]
      | e -> 
        let fvs = fvs_of_exp e in
        let rec find_hash fvs h r = 
@@ -190,7 +196,7 @@ let rec emit_chc fvs fun_num ifel c =
        let (hash_fvs, fvs) = find_hash fvs [] [] in
        intpred_env := (id, hash_fvs) :: !intpred_env;
        List.iter (fun fv -> intpred_env := (fv, []) :: !intpred_env) fvs;
-       [Imply(Ands(Eq(Id("v"), exp_to_smtlib e) :: (List.map (fun fv -> IntPred(fv, [fv])) fvs)), IntPred(id, "v" :: hash_fvs))])
+       [Imply(Ands(Eq(Id("v"), exp_to_smtlib e) :: (List.map (fun fv -> IntPred(fv, fv :: (lookup fv !intpred_env))) fvs)), IntPred(id, "v" :: hash_fvs))])
   | CHCLet (id1,id2,l) -> 
     new_id id1 l ifel; new_id id2 l ifel;
     [Imply(ptrpred_p id2 (FV "i") (FV "n") ifel, ptrpred id2 (FV "i") (FV "n") ifel);
@@ -404,24 +410,25 @@ let ics_to_smtlib ics fun_num =
     | _ -> raise ConstrError
   in
   let s2 = List.concat (List.map g2 ids) in
-  let g3 ft_r e_ret = 
+  let g3 ft_r (cond, e_ret) = 
     try 
+      let cond_sl = Ands(cond) in
       let e_sl = exp_to_smtlib e_ret in
       (match ft_r, e_sl with
       | FTInt VarPred, FV id_e -> 
         intpred_env := (id_e, []) :: !intpred_env;
         let num = lookup id' fun_num in
-        varpred_count := (IntVarPred(num, "ret", []), (EConstUnit, EConstUnit, 0.)) :: !varpred_count;
-        [Imply(IntPred(id_e, ["v"]), IntVarPred(num, "ret", ["v"]))]
+        varpred_count := (IntVarPred(num, "ret", fvs), (EConstUnit, EConstUnit, 0.)) :: !varpred_count;
+        [Imply(cond_sl, Imply(IntPred(id_e, [id_e]), IntVarPred(num, "ret", id_e :: fvs)))]
       | FTInt VarPred, Id i -> 
         let num = lookup id' fun_num in
-        varpred_count := (IntVarPred(num, "ret", []), (EConstUnit, EConstUnit, 0.)) :: !varpred_count;
-        [Imply(Eq(FV "v", Id i), IntVarPred(num, "ret", ["v"]))] 
+        varpred_count := (IntVarPred(num, "ret", fvs), (EConstUnit, EConstUnit, 0.)) :: !varpred_count;
+        [Imply(cond_sl, Imply(Eq(FV "v", Id i), IntVarPred(num, "ret", "v" :: fvs)))] 
       | FTInt sl, FV id_e -> 
         intpred_env := (id_e, []) :: !intpred_env;
-        [Imply(IntPred(id_e, ["v"]), sl)]
+        [Imply(cond_sl, Imply(IntPred(id_e, [id_e]), sl))]
       | FTInt sl, Id i -> 
-        [Imply(Eq(FV "v", Id i), sl)] 
+        [Imply(cond_sl, Imply(Eq(FV "v", Id i), sl))] 
       | _ -> raise ConstrError)
     with ElimError -> []
   in

@@ -263,41 +263,42 @@ let rec fvs_of_exp exp =
   | EVar x -> [x]
   | _ -> []
 
-let rec ret_of_exp exp = 
+let rec ret_of_exp cond exp = 
   match exp with
   | ELetInt (id,e1,e2) -> 
-    ret_of_exp e2
+    ret_of_exp cond e2
   | ELetVarPtr (id1,id2,e) ->
-    ret_of_exp e
+    ret_of_exp cond e
   | ELetDerefPtr (id1,id2,e) ->
-    ret_of_exp e
+    ret_of_exp cond e
   | ELetAddPtr (id1,id2,e1,e2) ->
-    ret_of_exp e2
+    ret_of_exp cond e2
   | ELetSubPtr (id1,id2,e1,e2) ->
-    ret_of_exp e2
+    ret_of_exp cond e2
   | EIf (e1,e2,e3) ->
-    ret_of_exp e2 @ ret_of_exp e3
+    let cond_sl = exp_to_smtlib e1 in
+    ret_of_exp (cond_sl :: cond) e2 @ ret_of_exp (Not(cond_sl) :: cond) e3
   | EMkarray (id,i,e) ->
-    ret_of_exp e
+    ret_of_exp cond e
   | EAssign (id1,e1,e2) ->
-    ret_of_exp e2
+    ret_of_exp cond e2
   | EAssignInt (id,e1,e2) ->
-    ret_of_exp e2
+    ret_of_exp cond e2
   | EAssignPtr (id1,id2,e) ->
-    ret_of_exp e
+    ret_of_exp cond e
   | EAlias (e1,e2,e3) ->
-    ret_of_exp e3
+    ret_of_exp cond e3
   | EAliasVarPtr (id1,id2,e) ->
-    ret_of_exp e
+    ret_of_exp cond e
   | EAliasDerefPtr (id1,id2,e) ->
-    ret_of_exp e
+    ret_of_exp cond e
   | EAliasAddPtr (id1,id2,i,e) ->
-    ret_of_exp e
+    ret_of_exp cond e
   | EAssert (e1,e2) ->
-    ret_of_exp e2
+    ret_of_exp cond e2
   | ESeq (e1,e2) ->
-    ret_of_exp e2
-  | _ -> [exp]
+    ret_of_exp cond e2
+  | _ -> [(cond, exp)]
 
 let rec smtlib_subst subst st = 
   match st with

@@ -50,16 +50,16 @@ let main_int n iter =
   close_out oc1;
 
   let oc2 = open_out "../experiment/out_fv_pre.smt2" in
-  main_int_sub_declare oc2 all_cs true n iter;
+  (* main_int_sub_declare oc2 all_cs true n iter;
   main_int_sub oc2 all_cs true n iter;
   output_string oc2 "(check-sat)\n";
-  output_string oc2 "(get-model)\n";
+  output_string oc2 "(get-model)\n"; *)
   close_out oc2;
 
   let oc3 = open_out "../experiment/out_int2.smt2" in
-  main_int_sub_declare oc3 all_cs false n iter;
+  (* main_int_sub_declare oc3 all_cs false n iter;
   main_int_sub oc3 all_cs false n iter;
-  output_string oc3 "(check-sat)\n";
+  output_string oc3 "(check-sat)\n"; *)
   close_out oc3;
 
   print_string "ownership_pre: "
@@ -89,11 +89,11 @@ let main_fv n =
   output_string oc "(get-model)\n";
   close_out oc;
 
-  main_int_sub_declare oc2 all_cs true n 0;
+  (* main_int_sub_declare oc2 all_cs true n 0;
   main_int_sub oc2 all_cs true n 0;
   print_z3result oc2 z3res;
   output_string oc2 "\n\n";
-  output_string oc2 "(check-sat)\n";
+  output_string oc2 "(check-sat)\n"; *)
   close_out oc2;
 
   print_string "ownership: "
@@ -161,10 +161,10 @@ let main_chc n =
   output_string oc "(get-model)\n";
   close_out oc;
 
-  output_string oc2 "(set-logic HORN)\n\n\n";
+  (* output_string oc2 "(set-logic HORN)\n\n\n";
   main_chc_sub_declare oc2 all_chcs n;
   main_chc_sub oc2 all_chcs n;
-  output_string oc2 "(check-sat)\n";
+  output_string oc2 "(check-sat)\n"; *)
   close_out oc2;
 
   print_string "refinement: "
