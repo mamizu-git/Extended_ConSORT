@@ -14,17 +14,27 @@ init_i(n, p)
   }
 }
 
+verify(n, p)
+[ <#n: int, p: int ref> -> 
+  <#n: int, p: int ref | int> ]
+{
+  if n <= 0 then {
+    1
+  } else {
+    let m = n - 1 in
+    let q = p + m in
+    let y = *q in
+    assert(y = m);
+    let d = verify(m, p) in
+    alias(q = p + m);
+    1
+  }
+}
+
 {
   let p = mkarray 1000 in
   let m = 1000 in
   let d = init_i(m, p) in
-  let pp = *p in
-  assert(pp = 0);
-  let q = p + 1 in
-  let qq = *q in
-  assert(qq = 1);
-  let r = q + 1 in
-  let rr = *r in
-  assert(rr = 2);
+  let d2 = verify(m, p) in
   ()
 }

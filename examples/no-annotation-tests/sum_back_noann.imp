@@ -5,26 +5,20 @@ sum(n, p)
   if n <= 0 then {
     0
   } else {
-    if n = 1 then {
-      let x = *p in
-      x
-    } else {
-      let m = n - 1 in
-      let q = p + m in
-      let y = *q in
-      let s = sum(m, p) in
-      let z = y + s in
-      z
-    } 
-  }
+    let m = n - 1 in
+    let q = p + m in
+    let y = *q in
+    let s = sum(m, p) in
+    let z = y + s in
+    z
+  } 
 }
 
 abs(m)
-[ <m: int> -> <m: int | int> ]
+[ <#m: int> -> <#m: int | int> ]
 {
   if m >= 0 then {
-    let k = m in
-    k
+    m
   } else {
     let k = m * (-1) in
     k
@@ -39,15 +33,11 @@ init_x(n, x, p)
     1
   } else {
     p := x;
-    if n = 1 then {
-      1
-    } else {
-      let q = p + 1 in
-      let m = n - 1 in
-      let d = init_x(m, x, q) in
-      alias(q = p + 1);
-      1
-    }
+    let q = p + 1 in
+    let m = n - 1 in
+    let d = init_x(m, x, q) in
+    alias(q = p + 1);
+    1
   }
 }
 

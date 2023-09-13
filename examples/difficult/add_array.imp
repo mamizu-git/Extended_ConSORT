@@ -46,6 +46,23 @@ init_x(n, x, p)
   }
 }
 
+verify(n, p)
+[ <#n: int, p: int ref> -> 
+  <#n: int, p: int ref | int> ]
+{
+  if n <= 0 then {
+    1
+  } else {
+    let y = *p in
+    assert(y >= 0);
+    let q = p + 1 in
+    let m = n - 1 in
+    let d = verify(m, q) in
+    alias(q = p + 1);
+    1
+  }
+}
+
 {
   let p = mkarray 1000 in
   let q = mkarray 1000 in
@@ -56,7 +73,6 @@ init_x(n, x, p)
   let d = init_x(m, z, p) in
   let d1 = init_x(m, z, q) in
   let d2 = add_array(m, p, q, r) in
-  let rr = *r in
-  assert(rr >= 0);
+  let d3 = verify(m, r) in
   ()
 }
