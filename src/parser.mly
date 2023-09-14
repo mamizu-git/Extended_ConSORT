@@ -174,6 +174,8 @@ exp:
   { EDeref($2) }
 | id LPAREN args RPAREN
   { EApp($1, $3) }
+| MINUS int
+  { EConstInt(-$2) }
 | MINUS exp 
   { ESub(EConstInt(0), $2) } // TODO: make pattern
 | exp EQ exp 

@@ -4,7 +4,7 @@
 	let next_line = Lexing.new_line
 }
 
-let int = '-'? ['0'-'9']+
+let int = ['0'-'9']+
 
 let float = '-'?['0'-'9']+ '.' ['0' - '9']*
 

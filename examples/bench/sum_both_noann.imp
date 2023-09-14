@@ -28,7 +28,7 @@ abs(m)
   if m >= 0 then {
     m
   } else {
-    let k = m * (-1) in
+    let k = -m in
     k
   }
 }
