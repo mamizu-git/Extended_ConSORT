@@ -6,3 +6,4 @@ for file in examples/bench/*; do
     fi
     echo ""
 done
+#! /bin/bash

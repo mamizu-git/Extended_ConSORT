@@ -1,3 +1,4 @@
+#! /bin/bash
 j=3
 while true
 do
