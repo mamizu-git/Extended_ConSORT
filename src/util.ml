@@ -1,3 +1,5 @@
+(** Utility functions *)
+
 open Syntax
 open TySyntax
 open SimpleTyping

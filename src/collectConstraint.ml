@@ -1,3 +1,4 @@
+(** Translator from Syntax.Exp to Syntax.constr *)
 open Syntax
 open TySyntax
 open SimpleTyping

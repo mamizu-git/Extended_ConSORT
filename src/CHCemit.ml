@@ -1,3 +1,5 @@
+(** Module for refinement constraint generation *)
+
 open Syntax
 open CHCcollectConstraint
 open TySyntax
@@ -62,6 +64,7 @@ let rec union_list ls1 ls2 =
   | [] -> ls2
   | x :: ls1' -> if List.mem x ls2 then union_list ls1' ls2 else union_list ls1' (x :: ls2)
 
+(** Main procedure for generating the refinement constraints *)
 let rec emit_chc fvs fun_num ifel c =
   match c with
   | CHCIf (e,cs1,cs2,l) -> 
@@ -361,5 +364,3 @@ let all_cs_to_smtlib_chc all_cs n =
   let fun_num = fun_number all_cs 0 [] in
   let (ss, id_count_chc, varpred_count, fvs) = ics_to_smtlib (List.nth all_cs n) fun_num in
   (id_count_chc, varpred_count, fvs, ss)
-  
-    

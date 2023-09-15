@@ -1,3 +1,5 @@
+(** Module for simple types *)
+
 exception Unbound
 exception TyError
 
@@ -6,7 +8,7 @@ type tyvar = int
 type ty =
   | TyUnit
   | TyInt
-  | TyBool
+  | TyBool (** Unlike in the paper we consider that expressions such as x = y have bool type *)
   | TyRef of ty
   | TyFun of ty list * ty
   | TyVar of tyvar
