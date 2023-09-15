@@ -1,7 +1,7 @@
 open Syntax
 open TySyntax
 open SimpleTyping
-open Elim
+open Util
 
 exception ConstrError
 

@@ -1,6 +1,6 @@
 open Z3Syntax2
 open Syntax
-open Elim
+open Util
 
 let rec get_id ownerships num = 
   match ownerships with

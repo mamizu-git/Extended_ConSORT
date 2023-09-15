@@ -2,7 +2,7 @@ open Syntax
 open CollectConstraint
 open TySyntax
 open SimpleTyping
-open Elim
+open Util
 
 let id_count = ref []
 
@@ -417,5 +417,3 @@ let all_cs_to_smtlib all_cs n =
   let (ss, id_count, varown_count, fvs) = ics_to_smtlib (List.nth all_cs n) n fun_num in
   
   (id_count, varown_count, fvs, ss)
-  
-    
