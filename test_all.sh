@@ -3,7 +3,7 @@
 function verbose (){
     for file in examples/benchmark/*; do
         echo "$file:"
-        timeout 180 ./test.sh $file
+        time -p timeout 180 ./test.sh $file
         if [ $? -ne 0 ]; then
             echo "Timeout"
         fi
