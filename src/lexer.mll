@@ -14,9 +14,7 @@ let id_rest = ['a'-'z' 'A'-'Z' '0'-'9' '_' '$' ''']
 let id = ('_' id_rest+ | ['a' - 'z' 'A'-'Z'] id_rest*)
 let non_comment = [^ '/' '*' '\n']+
 let comment_delim = [ '/' '*' ]
-(* let operators = ['+' '-' '*' '/' '%' '<' '>' '=' '!' '&' '^' '|' '#' '@']+ *)
 let not_newline = [^'\n']+
-(* let nonquote = [^'"']+ *)
 
 rule read =
   parse
@@ -29,35 +27,27 @@ rule read =
   | white    { read lexbuf }
   | newline { next_line lexbuf; read lexbuf }
   | "()" { UNIT }
-  | int { let i = int_of_string @@ Lexing.lexeme lexbuf in (* LabelManager._internal_incr i; *) INT i }
+  | int { let i = int_of_string @@ Lexing.lexeme lexbuf in INT i }
 	| float { let f = float_of_string @@ Lexing.lexeme lexbuf in FLOAT f }
-  (* | "ifnull" { IFNULL } *)
   | "if" { IF }
   | "then" { THEN }
   | "else" { ELSE }
   | "let" { LET }
   | "in" { IN }
-  (* | "length" { LENGTH } *)
-  (* | "fail" { FAIL } *)
   | ';' { SEMI }
   | ':' { COLON }
   | ',' { COMMA }
   | '[' { LBRACKET }
   | ']' { RBRACKET }
-  (* | "<-" { LARROW } *)
-  (* | "mkref" { MKREF } *)
   | "mkarray" { MKARRAY }
   | "alias" { ALIAS }
   | "assert" { ASSERT }
   | "true" { TRUE }
   | "false" { FALSE }
-  (* | "return" { RETURN } *)
   | '(' { LPAREN }
   | ')' { RPAREN }
   | '{' { LBRACE }
   | '}' { RBRACE }
-  (* | "/\\" { AND } *)
-  (* | '.' { DOT } *)
   | '=' { EQ }
   | '<' { LTHAN }
   | '>' { GTHAN }
@@ -83,10 +73,7 @@ rule read =
   | '#' { HASH }
   | "->" { ARROW }
 	| '|' { BAR }
-  (* | '~' { NU } *)
   | ":=" { ASSIGN }
-  (* | "null" { NULL } *)
-  (* | operators { OPERATOR (Lexing.lexeme lexbuf) } *)
   | '_' { UNDERSCORE }
   | id { ID (Lexing.lexeme lexbuf) }
   | eof { EOF }
@@ -103,27 +90,3 @@ and line_comment =
   parse
   | not_newline { line_comment lexbuf }
   | newline { next_line lexbuf }
-(* and pd1 =
-  parse
-  | white { pd1 lexbuf }
-  | '"' { str_content lexbuf }
-  | _ { failwith @@ "Invalid token " ^ (Lexing.lexeme lexbuf) }
-and str_content =
-  parse
-  | nonquote { end_str (Lexing.lexeme lexbuf) lexbuf }
-  | _ { failwith @@ "Invalid token " ^ (Lexing.lexeme lexbuf) }
-and end_str nm =
-  parse
-  | '"' { pd2 nm lexbuf }
-  | _ { failwith @@ "Invalid token " ^ (Lexing.lexeme lexbuf) }
-and pd2 nm =
-  parse
-  | white { pd2 nm lexbuf }
-  | int { let v = int_of_string @@ Lexing.lexeme lexbuf in pd3 (nm,v) lexbuf }
-  | _ { failwith @@ "Invalid token " ^ (Lexing.lexeme lexbuf) }
-and pd3 g =
-  parse
-  | white { pd3 g lexbuf }
-  | newline { next_line lexbuf; g }
-  | _ { failwith @@ "Invalid token " ^ (Lexing.lexeme lexbuf) }
- *)

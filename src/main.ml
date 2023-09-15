@@ -36,36 +36,16 @@ let main_int file iter =
   close_in oc_r1;
   let (fdefs, _) = prog in
   let n = List.length fdefs in 
-  (* print_program prog; print_newline (); print_newline (); *)
-  infer_prog prog;
-  (* print_all_tyenv !all_tyenv; print_newline (); print_newline (); *)
-  let prog' = convert prog in
-  (* print_program prog'; print_newline (); print_newline (); *)
-  let all_cs = collect_prog prog' in 
-  (* print_all_constraints all_cs; print_newline (); print_newline (); *)
-
+    infer_prog prog;
+    let prog' = convert prog in
+    let all_cs = collect_prog prog' in 
+  
   let oc1 = open_out "experiment/out_int.smt2" in
   main_int_sub_declare oc1 all_cs false n iter;
   main_int_sub oc1 all_cs false n iter;
   output_string oc1 "(check-sat)\n";
   output_string oc1 "(get-model)\n";
   close_out oc1
-
-  (* let oc2 = open_out "experiment/out_fv_pre.smt2" in
-  main_int_sub_declare oc2 all_cs true n iter;
-  main_int_sub oc2 all_cs true n iter;
-  output_string oc2 "(check-sat)\n";
-  output_string oc2 "(get-model)\n";
-  close_out oc2; *)
-
-  (* let oc3 = open_out "experiment/out_int2.smt2" in
-  main_int_sub_declare oc3 all_cs false n iter;
-  main_int_sub oc3 all_cs false n iter;
-  output_string oc3 "(check-sat)\n";
-  close_out oc3; *)
-
-  (* print_string "ownership_pre: " *)
-
 
 let main_fv file =
   let oc_r1 = open_in file  in
@@ -75,17 +55,12 @@ let main_fv file =
   close_in oc_r1; close_in oc_r2;
   let (fdefs, _) = prog in
   let n = List.length fdefs in 
-  (* print_program prog; print_newline (); print_newline (); *)
-  infer_prog prog;
-  (* print_all_tyenv !all_tyenv; print_newline (); print_newline (); *)
-  let prog' = convert prog in
-  (* print_program prog'; print_newline (); print_newline (); *)
-  let all_cs = collect_prog prog' in 
-  (* print_all_constraints all_cs; print_newline (); print_newline (); *)
-  
+    infer_prog prog;
+    let prog' = convert prog in
+    let all_cs = collect_prog prog' in 
+    
   let oc = open_out "experiment/out_fv.smt2" in
-  (* let oc2 = open_out "experiment/out_fv2.smt2" in *)
-  main_int_sub_declare oc all_cs true n 0;
+    main_int_sub_declare oc all_cs true n 0;
   main_int_sub oc all_cs true n 0;
   print_z3result oc z3res;
   output_string oc "\n\n";
@@ -93,23 +68,14 @@ let main_fv file =
   output_string oc "(get-model)\n";
   close_out oc
 
-  (* main_int_sub_declare oc2 all_cs true n 0;
-  main_int_sub oc2 all_cs true n 0;
-  print_z3result oc2 z3res;
-  output_string oc2 "\n\n";
-  output_string oc2 "(check-sat)\n";
-  close_out oc2; *)
-
-  (* print_string "ownership: " *)
-
+  
 let rec main_chc_sub_declare oc all_chcs n = 
   if n < 0 then 
     ()
   else
     (let oc_r2 = open_in "experiment/result" in
     let z3res = Z3Parser2.result Z3Lexer2.read (Lexing.from_channel oc_r2) in
-    (* print_ownerships stdout z3res; *)
-    close_in oc_r2;
+        close_in oc_r2;
     
     let (id_count, varpred_count, fvs, sls) = all_cs_to_smtlib_chc all_chcs n in
     let args_own_sls = ownexp_to_ownchc varpred_count n in
@@ -127,8 +93,7 @@ let rec main_chc_sub oc all_chcs n =
   else
     (let oc_r2 = open_in @@ "experiment/result" in
     let z3res = Z3Parser2.result Z3Lexer2.read (Lexing.from_channel oc_r2) in
-    (* print_ownerships stdout z3res; *)
-    close_in oc_r2;
+        close_in oc_r2;
     
     let (id_count, varpred_count, fvs, sls) = all_cs_to_smtlib_chc all_chcs n in
     let args_own_sls = ownexp_to_ownchc varpred_count n in
@@ -149,32 +114,17 @@ let main_chc file =
 
   let (fdefs, _) = prog in
   let n = List.length fdefs in 
-  (* print_program prog; print_newline (); print_newline (); *)
-  infer_prog prog;
-  (* print_all_tyenv !all_tyenv; print_newline (); print_newline (); *)
-  let prog' = convert prog in
-  (* print_program prog'; print_newline (); print_newline (); *)
-  let all_chcs = chc_collect_prog prog' in 
-  (* print_all_chcs all_chcs; print_newline (); print_newline (); *)
-  (* List.iter (fun (id, ann) -> print_string id; print_string ": "; print_annotation ann; print_newline ()) !fn_env_chc; *)
-
+    infer_prog prog;
+    let prog' = convert prog in
+    let all_chcs = chc_collect_prog prog' in 
+    
   let oc = open_out "experiment/out_chc.smt2" in
-  (* let oc2 = open_out "experiment/out_chc2.smt2" in *)
-  output_string oc "(set-logic HORN)\n\n\n";
+    output_string oc "(set-logic HORN)\n\n\n";
   main_chc_sub_declare oc all_chcs n;
   main_chc_sub oc all_chcs n;
   output_string oc "(check-sat)\n";
   output_string oc "(get-model)\n";
   close_out oc
-
-  (* output_string oc2 "(set-logic HORN)\n\n\n";
-  main_chc_sub_declare oc2 all_chcs n;
-  main_chc_sub oc2 all_chcs n;
-  output_string oc2 "(check-sat)\n";
-  close_out oc2; *)
-
-  (* print_string "refinement: " *)
-
 
 let _ = 
   let input1 = Sys.argv.(1) in

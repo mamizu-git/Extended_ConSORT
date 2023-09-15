@@ -114,7 +114,7 @@ let rec constr_to_smtlib fvs n fun_num ifel c =
     let ids_post_if = find_id_count ("if" :: ifel) !id_count [] in
     let ids_post_el = find_id_count ("el" :: ifel) !id_count [] in
     let ids_post = union_list ids_post_if ids_post_el in
-    List.iter (fun id -> new_id id (l+1) ifel) ids_post; (**)
+    List.iter (fun id -> new_id id (l+1) ifel) ids_post; 
     let ss_post_if = 
       List.map 
         (fun s -> Imply(exp_to_smtlib e, s))
@@ -148,16 +148,9 @@ let rec constr_to_smtlib fvs n fun_num ifel c =
      Geq(hi_p fvs id2 n ifel, hi fvs id1 n ifel);
      Geq(hi_p fvs id2 n ifel, hi fvs id2 n ifel);
      Leq(lo fvs id1 n ifel, hi fvs id1 n ifel);
-     Leq(lo fvs id2 n ifel, hi fvs id2 n ifel)] (* TODO?: fix o = 0. as minimum *)
-  (* | CLetDeref (id1,id2,l) -> 
-    (print_string ("CLetDeref(" ^ id1 ^ ", ");
-     print_string id2;
-     print_string " | ";
-     print_int l;
-     print_string ")") *)
+     Leq(lo fvs id2 n ifel, hi fvs id2 n ifel)] 
   | CLetAddPtr (id1,id2,e,l) -> 
     new_id id1 l ifel; new_id id2 l ifel;
-    (* let lh = if fvs = [] then [Leq(lo fvs id1 n ifel, hi fvs id1 n ifel); Leq(lo fvs id2 n ifel, hi fvs id2 n ifel)] else [] in  *)
     let sl = exp_to_smtlib e in
     [Or(Geq(o_p id2 n ifel, Add(o id1 n ifel, o id2 n ifel)),
      Or(Gt(Add(lo fvs id1 n ifel, sl), hi fvs id2 n ifel), 
@@ -167,11 +160,9 @@ let rec constr_to_smtlib fvs n fun_num ifel c =
      Leq(lo_p fvs id2 n ifel, Add(lo fvs id1 n ifel, sl));
      Leq(lo_p fvs id2 n ifel, lo fvs id2 n ifel);
      Geq(hi_p fvs id2 n ifel, Add(hi fvs id1 n ifel, sl));
-     Geq(hi_p fvs id2 n ifel, hi fvs id2 n ifel)]  (* TODO?: fix o = 0. as minimum *)
-     (* @ [Leq(lo fvs id1 n ifel, hi fvs id1 n ifel); Leq(lo fvs id2 n ifel, hi fvs id2 n ifel)]  *)
+     Geq(hi_p fvs id2 n ifel, hi fvs id2 n ifel)]  
   | CLetSubPtr (id1,id2,e,l) -> 
     new_id id1 l ifel; new_id id2 l ifel;
-    (* let lh = if fvs = [] then [Leq(lo fvs id1 n ifel, hi fvs id1 n ifel); Leq(lo fvs id2 n ifel, hi fvs id2 n ifel)] else [] in  *)
     let sl = exp_to_smtlib e in
     [Or(Geq(o_p id2 n ifel, Add(o id1 n ifel, o id2 n ifel)),
      Or(Gt(Sub(lo fvs id1 n ifel, sl), hi fvs id2 n ifel), 
@@ -181,8 +172,7 @@ let rec constr_to_smtlib fvs n fun_num ifel c =
      Leq(lo_p fvs id2 n ifel, Sub(lo fvs id1 n ifel, sl));
      Leq(lo_p fvs id2 n ifel, lo fvs id2 n ifel);
      Geq(hi_p fvs id2 n ifel, Sub(hi fvs id1 n ifel, sl));
-     Geq(hi_p fvs id2 n ifel, hi fvs id2 n ifel)]  (* TODO?: fix o = 0. as minimum *)
-     (* @ [Leq(lo fvs id1 n ifel, hi fvs id1 n ifel); Leq(lo fvs id2 n ifel, hi fvs id2 n ifel)]  *)
+     Geq(hi_p fvs id2 n ifel, hi fvs id2 n ifel)]  
   | CMkArray (id,i,l) -> 
     new_id id l ifel;
     [Eq(o id n ifel, Id "1"); 
@@ -192,12 +182,6 @@ let rec constr_to_smtlib fvs n fun_num ifel c =
     [Eq(o id n ifel, Id "1");
      Leq(lo fvs id n ifel, Id "0"); 
      Geq(hi fvs id n ifel, Id "0")]
-  (* | CAssignRef (id1,id2,l) -> 
-    (print_string ("CAssignRef(" ^ id1 ^ ", ");
-     print_string id2;
-     print_string " | ";
-     print_int l;
-     print_string ")") *)
   | CAlias (id1,id2,l) -> 
     new_id id1 l ifel; new_id id2 l ifel;
     [Or(And(Eq(Add(o_p id1 n ifel, o_p id2 n ifel), Add(o id1 n ifel, o id2 n ifel)),
@@ -248,16 +232,9 @@ let rec constr_to_smtlib fvs n fun_num ifel c =
                    Eq(Add(hi fvs id2 n ifel, Id "1"), lo fvs id1 n ifel)))))))))))));
      Leq(lo fvs id1 n ifel, hi fvs id1 n ifel);
      Leq(lo fvs id2 n ifel, hi fvs id2 n ifel)]
-  (* | CAliasDeref (id1,id2,l) -> 
-    (print_string ("CAliasDeref(" ^ id1 ^ ", ");
-     print_string id2;
-     print_string " | ";
-     print_int l;
-     print_string ")") *)
   | CAliasAddPtr (id1,id2,e,l) -> 
     new_id id1 l ifel; new_id id2 l ifel;
     let sl = exp_to_smtlib e in
-    (* let lh = if fvs = [] then [Leq(lo fvs id1 n ifel, hi fvs id1 n ifel); Leq(lo fvs id2 n ifel, hi fvs id2 n ifel)] else [] in *)
     [Or(And(Eq(Add(o_p id1 n ifel, o_p id2 n ifel), Add(o id1 n ifel, o id2 n ifel)),
         And(Eq(Add(lo_p fvs id1 n ifel, sl), lo_p fvs id2 n ifel),
         And(Eq(Add(lo_p fvs id1 n ifel, sl), Add(lo fvs id1 n ifel, sl)),
@@ -323,15 +300,13 @@ let rec constr_to_smtlib fvs n fun_num ifel c =
       match ftid_ft, arg with
       | (RawId id_ptr, FTRef (_,ENull,ENull,_)), AId id ->
         let num = lookup id_fn fun_num in
-        (* varown_count := (id_ptr, "b", num) :: !varown_count; *)
         let fvs' = union_list (List.map fst subst) fvs in
         let sll = lo_be fvs' id_ptr num "b" in
         let slh = hi_be fvs' id_ptr num "b" in
-        [Or(Eq(Id "0.", o_be id_ptr num "b"), (* needless? *)
+        [Or(Eq(Id "0.", o_be id_ptr num "b"), 
          And(Geq(o id n ifel, o_be id_ptr num "b"),
          And(Leq(lo fvs id n ifel, smtlib_subst subst sll),
              Geq(hi fvs id n ifel, smtlib_subst subst slh))))]
-         (* @ [Leq(lo fvs id n ifel, hi fvs id n ifel)]  *)
       | (RawId _, FTRef (_,el,eh,f)), AId id -> 
         let l_arg_exp = exp_subst subst el in
         let h_arg_exp = exp_subst subst eh in
@@ -339,7 +314,6 @@ let rec constr_to_smtlib fvs n fun_num ifel c =
          And(Geq(o id n ifel, Id (string_of_float f)),
          And(Leq(lo fvs id n ifel, exp_to_smtlib l_arg_exp),
              Geq(hi fvs id n ifel, exp_to_smtlib h_arg_exp))))]
-         (* @ [Leq(lo fvs id n ifel, hi fvs id n ifel)]  *)
       | _, AExp e -> []
       | _ -> raise ConstrError
     in
@@ -348,29 +322,25 @@ let rec constr_to_smtlib fvs n fun_num ifel c =
       match ftid_ft, arg with
       | (RawId id_ptr, FTRef (_,ENull,ENull,_)), AId id ->
         let num = lookup id_fn fun_num in
-        (* varown_count := (id_ptr, "e", num) :: !varown_count; *)
         let fvs' = union_list (List.map fst subst) fvs in
         let sll = lo_be fvs' id_ptr num "e" in
         let slh = hi_be fvs' id_ptr num "e" in
         new_id id l ifel;
         [Eq(o id n ifel, o_be id_ptr num "e");
          Eq(lo fvs id n ifel, smtlib_subst subst sll);
-         Eq(hi fvs id n ifel, smtlib_subst subst slh)]
-         (* @ [Leq(lo fvs id n ifel, hi fvs id n ifel)]  *)
+         Eq(hi fvs id n ifel, smtlib_subst subst slh)] 
       | (RawId _, FTRef (_,el,eh,f)), AId id -> 
         let l_arg_exp = exp_subst subst el in
         let h_arg_exp = exp_subst subst eh in
         new_id id l ifel;
         [Eq(o id n ifel, Id (string_of_float f));
          Eq(lo fvs id n ifel, exp_to_smtlib l_arg_exp);
-         Eq(hi fvs id n ifel, exp_to_smtlib h_arg_exp)]
-         (* @ [Leq(lo fvs id n ifel, hi fvs id n ifel)]  *)
+         Eq(hi fvs id n ifel, exp_to_smtlib h_arg_exp)]  
       | _, AExp e -> []
       | _ -> raise ConstrError
     in
     let ss2 = List.concat (List.map2 g2 ftid_fts2 args) in
     ss1 @ ss2
-    (* ss1 *)
 
 let find_fv ftid_ft = 
   match ftid_ft with
@@ -428,22 +398,10 @@ let ics_to_smtlib ics n fun_num =
   let s2 = List.concat (List.map g2 ref_ids) in
   let g_lh (id, (i,ifel)) =
     let o_id = Id("o_" ^ (string_of_int n) ^ "_" ^ id ^ "_" ^ (string_of_int i) ^ (ifel_to_str ifel)) in
-    (* let rec lh_id fvs lh id i ifel = 
-      (match fvs with
-      | [] -> Id("d_" ^ (string_of_int n) ^ "_" ^ lh ^ id ^ "_" ^ (string_of_int i) ^ (ifel_to_str ifel))
-      | fv :: fvs' ->
-        Add(Mul(Id("c_" ^ (string_of_int n) ^ "_" ^ lh ^ fv ^ "_" ^ id ^ "_" ^ (string_of_int i) ^ (ifel_to_str ifel)), FV(fv)),
-            lh_id fvs' lh id i ifel))
-    in
-    let lo_id = lh_id fvs "l_" id i ifel in
-    let hi_id = lh_id fvs "h_" id i ifel in *)
     [Geq(o_id, Id "0.");
-     (* Leq(lo_id, hi_id);  *)
      Leq(o_id, Id "1.")]
-     (* Imply(Eq(o_id, Id "0."), Eq(lo_id, Id "0"));
-     Imply(Eq(o_id, Id "0."), Eq(hi_id, Id "0"))] *)
   in
-  let s_olh = List.concat (List.map g_lh !id_count) in (**)
+  let s_olh = List.concat (List.map g_lh !id_count) in 
   (s_olh @ s1 @ ss @ s2, !id_count, !varown_count, fvs)
 
 let rec fun_number all_cs cnt res =
@@ -454,10 +412,10 @@ let rec fun_number all_cs cnt res =
     fun_number all_cs' (cnt+1) ((id, cnt) :: res)
 
 let all_cs_to_smtlib all_cs n =
-  (* List.concat (List.map ics_to_smtlib all_cs) *)
+  
   let fun_num = fun_number all_cs 0 [] in
   let (ss, id_count, varown_count, fvs) = ics_to_smtlib (List.nth all_cs n) n fun_num in
-  (* print_declare id_count fvs; *)
+  
   (id_count, varown_count, fvs, ss)
   
     

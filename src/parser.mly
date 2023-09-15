@@ -20,7 +20,7 @@
 %token LET IN EQ // MKREF
 
 // arrays
-%token MKARRAY LBRACKET RBRACKET // LARROW LENGTH
+%token MKARRAY LBRACKET RBRACKET 
 
 // BIFs
 %token ASSERT ALIAS
@@ -37,7 +37,6 @@
 %token STAR
 %token DIV
 %token LTHAN GTHAN LEQ GEQ NEQ
-// %token DOT
 
 // connectives
 %token SEMI COMMA
@@ -54,10 +53,8 @@
 %token ARROW
 %token NU TINT REF TUNIT TOR TAND TIMPLY TNOT
 %token HASH
-// %token NU AND
 
 /* priority : low -> high */
-// %right ARROW
 %left OR
 %left AND
 %nonassoc NOT
@@ -160,7 +157,7 @@ exp:
   { ELet($2, $4, $6) }
 | IF exp THEN LBRACE exp RBRACE ELSE LBRACE exp RBRACE 
   { EIf($2, $5, $9) }
-| LET id EQ MKARRAY int IN exp // int => exp ?
+| LET id EQ MKARRAY int IN exp 
   { EMkarray($2, $5, $7) }
 | id ASSIGN exp SEMI exp
   { EAssign($1, $3, $5) }
@@ -169,7 +166,7 @@ exp:
 | ASSERT LPAREN exp RPAREN SEMI exp
   { EAssert($3, $6) }
 | exp SEMI exp
-  { ESeq($1, $3) } // ELet ?
+  { ESeq($1, $3) }
 | STAR id 
   { EDeref($2) }
 | id LPAREN args RPAREN
@@ -177,7 +174,7 @@ exp:
 | MINUS int
   { EConstInt(-$2) }
 | MINUS exp 
-  { ESub(EConstInt(0), $2) } // TODO: make pattern
+  { ESub(EConstInt(0), $2) }
 | exp EQ exp 
   { EEq($1, $3) }
 | exp LTHAN exp 

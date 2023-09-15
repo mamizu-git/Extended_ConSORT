@@ -10,18 +10,13 @@ let fn_env_chc : (id * ((ftype_id * ftype) list * (ftype_id * ftype) list * ftyp
 let rec chc_collect_exp env f_id args l exp =
   match exp with
   | EIf (e1,e2,e3) ->
-    let c1 = chc_collect_exp env f_id args l e1 in (* needless? *)
+    let c1 = chc_collect_exp env f_id args l e1 in 
     let c2 = chc_collect_exp env f_id args (l+1) e2 in
     let c3 = chc_collect_exp env f_id args (l+1) e3 in
-    (* let e1' = elim_v env f_id args e1 in *)
     CHCIf(e1, c2, c3, l) :: c1
   | ELetInt (id,e1,e2) ->
-    (* let e1' = elim_v env f_id args e1 in *)
-    (* let env' = (id, e1') :: env in *)
-    (* let c1 = chc_collect_exp env' f_id args l e1' in *)
     let c2 = chc_collect_exp env f_id args (l+1) e2 in
     CHCLetInt(id, e1, l) :: c2
-    (* c1 @ c2 *)
   | ELetVarPtr (id1,id2,e) ->
     let c = chc_collect_exp env f_id args (l+1) e in
     CHCLet(id1, id2, l) :: c
@@ -40,8 +35,6 @@ let rec chc_collect_exp env f_id args l exp =
     let c = chc_collect_exp env f_id args (l+1) e in
     CHCMkArray(id, i, l) :: c
   | EAssignInt (id,e1,e2) ->
-    (* let e1' = elim_v env f_id args e1 in *)
-    (* let c1 = chc_collect_exp env f_id args l e1' in *)
     let c2 = chc_collect_exp env f_id args (l+1) e2 in
     CHCAssignInt(id, e1, l) :: c2
   | EAssignPtr (id1,id2,e) ->
@@ -58,25 +51,14 @@ let rec chc_collect_exp env f_id args l exp =
     let c2 = chc_collect_exp env f_id args (l+1) e2 in
     CHCAliasAddPtr(id1, id2, e1, l) :: c1 @ c2
   | EAssert (e1,e2) ->
-    (* let c1 = chc_collect_exp env f_id args l e1 in *)
     let c2 = chc_collect_exp env f_id args (l+1) e2 in
     CHCAssert(e1, l) :: c2
   | ESeq (e1,e2) ->
     let c1 = chc_collect_exp env f_id args l e1 in
     let c2 = chc_collect_exp env f_id args (l+1) e2 in
     c1 @ c2
-  (* | EDeref id ->
-    [CDeref(id, l)] *)
   | EApp (id,es) ->
     let cs = List.concat (List.map (chc_collect_exp env f_id args l) es) in
-    (* let TyFun (t_args, _) = lookup id (lookup "main" !all_tyenv) in
-    let g t e =
-      match t, e with
-      | TyRef _, EVar id -> AId id
-      | TyInt, _ -> AExp (elim_v env f_id args e)
-      | _ -> raise ConstrError
-    in
-    let args = List.map2 g t_args es in *)
     CHCApp(id, es, l) :: cs
   | _ -> []
 

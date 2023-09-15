@@ -16,7 +16,7 @@ rule read =
   parse
   | white    { read lexbuf }
   | newline { next_line lexbuf; read lexbuf }
-  | int { let i = int_of_string @@ Lexing.lexeme lexbuf in (* LabelManager._internal_incr i; *) INT i }
+  | int { let i = int_of_string @@ Lexing.lexeme lexbuf in INT i }
   | float { let f = float_of_string @@ Lexing.lexeme lexbuf in FLOAT f }
   | "sat" { SAT }
   | "model" { MODEL }

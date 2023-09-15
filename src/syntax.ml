@@ -86,7 +86,7 @@ type constr =
   | CIf of exp * constr list * constr list * pos
   | CLet of id * id * pos
   | CLetDeref of id * id * pos
-  | CLetAddPtr of id * id * exp * pos (* let p = q + x in ができない -> できるように *)
+  | CLetAddPtr of id * id * exp * pos 
   | CLetSubPtr of id * id * exp * pos
   | CMkArray of id * int * pos
   | CAssignInt of id * pos
@@ -105,7 +105,7 @@ type chc =
   | CHCLetInt of id * exp * pos
   | CHCLet of id * id * pos
   | CHCLetDeref of id * id * pos
-  | CHCLetAddPtr of id * id * exp * pos (* let p = q + x in ができない -> できるように *)
+  | CHCLetAddPtr of id * id * exp * pos 
   | CHCLetSubPtr of id * id * exp * pos
   | CHCMkArray of id * int * pos
   | CHCAssignInt of id * exp * pos
@@ -729,9 +729,9 @@ and fvs_of_smtlib sl =
   | IntVarPred (num,id1,ids) ->
     ids
   | PtrPred (id,l,s1,s2) ->
-    "v" :: (fvs_of_smtlib s1) @ (fvs_of_smtlib s2) (**)
+    "v" :: (fvs_of_smtlib s1) @ (fvs_of_smtlib s2) 
   | PtrVarPred (num,id1,id2,s1,s2) ->
-    "v" :: (fvs_of_smtlib s1) @ (fvs_of_smtlib s2) (**)
+    "v" :: (fvs_of_smtlib s1) @ (fvs_of_smtlib s2) 
   | VarPred ->
     []
   | Ands ss ->
@@ -827,13 +827,6 @@ let print_declare_varpred oc varpred_count num =
             output_string oc " ( Int Int Int ) Bool)\n")
           else ()
          ) (list_to_set (List.map fst varpred_count) [])
-
-(* let print_declare_chc_int oc int_fvs num =
-  (List.iter
-    (fun id ->
-       output_string oc ("(declare-fun P" ^ string_of_int num ^ "_" ^ id);
-       output_string oc " ( Int ) Bool)\n"
-       ) int_fvs) *)
 
 let rec print_chc c = 
   match c with

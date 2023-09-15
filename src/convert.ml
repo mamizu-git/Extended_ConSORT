@@ -20,7 +20,7 @@ let rec g f_id exp =
     if lookup id (lookup f_id !all_tyenv) = TyRef (TyInt) then 
       EAssignInt(id, g f_id e1, g f_id e2)
     else
-      let EVar id1 = e1 in (* cannot deal with "p := q + 1" *)
+      let EVar id1 = e1 in 
       EAssignPtr(id, id1, g f_id e2)
   | EAlias (e1,e2,e3) -> 
     let EVar id1 = e1 in
@@ -28,7 +28,7 @@ let rec g f_id exp =
      | EVar id2 -> EAliasVarPtr(id1, id2, g f_id e3)
      | EDeref id2 -> EAliasDerefPtr(id1, id2, g f_id e3)
      | EAdd (EVar id2, e) -> EAliasAddPtr(id1, id2, e, g f_id e3)
-     | ESub (EVar id2, e) -> EAliasAddPtr(id2, id1, e, g f_id e3) (**)
+     | ESub (EVar id2, e) -> EAliasAddPtr(id2, id1, e, g f_id e3) 
      | _ -> raise ConvertError)
   | EIf (e1,e2,e3) -> EIf(g f_id e1, g f_id e2, g f_id e3)
   | EMkarray (id,i,e) -> EMkarray(id, i, g f_id e)
