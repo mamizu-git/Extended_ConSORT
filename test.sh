@@ -2,7 +2,7 @@
 time -p {
 Z3=z3
 HOICE=hoice
-i=1
+i=0
 j=3
 while true
 do
