@@ -1,7 +1,7 @@
 #! /bin/bash
 
 function verbose (){
-    for file in examples/bench/*; do
+    for file in examples/benchmark/*; do
         echo "$file:"
         time -p timeout 180 ./test.sh $file
         if [ $? -ne 0 ]; then
@@ -15,7 +15,7 @@ function verbose (){
 function gen_table(){
     # Only shows the "real time"
     TIMEFORMAT='%3R'
-    for file in examples/bench/*; do
+    for file in examples/benchmark/*; do
         # Ignores the output of test.sh
         ret=$( { time timeout 180 ./test.sh $file >/dev/null ; } 2>&1 )
         if [ $? -ne 0 ]; then
