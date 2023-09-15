@@ -4,6 +4,7 @@ Z3=z3
 HOICE=hoice
 i=0
 j=3
+rm experiment/*
 while true
 do
 	i=$(($i+1))
