@@ -1,6 +1,8 @@
+(** An intermediate module to pass the ownership information obtained to the refinment inference phase *)
+
 open Z3Syntax2
 open Syntax
-open Elim
+open Util
 
 let rec get_id ownerships num = 
   match ownerships with
@@ -18,6 +20,7 @@ let rec find_id (id,i) num ownerships =
   | _ :: rest -> find_id (id,i) num rest
   | [] -> []
 
+(** Main procedure: Adds constraints for Empty, i.e. types with ownership 0 *)
 let rec own_to_chc (id,i) h_now l_now ownerships =
   match ownerships with
   | Own (num,id1,i1,Float f) :: rest -> 

@@ -1,17 +1,22 @@
+(** Module for handling the model outputtted by Z3 in the form of ownership function *)
+
 exception Z3Syntax2Error
 
 type id = string
+
+type pos = string
 
 type value =
   | Int   of int
   | Float of float
 
+(** Type to represent the ownership fumction of the form \[c_l * x + d_l, c_h * y +d_h \] |-> o *)
 type ownership = 
-  | Own   of int * id * id * value
-  | CHigh of int * id * id * id * value
-  | CLow  of int * id * id * id * value
-  | DHigh of int * id * id * value
-  | DLow  of int * id * id * value
+  | Own   of int * id * pos * value
+  | CHigh of int * id * id * pos * value
+  | CLow  of int * id * id * pos * value
+  | DHigh of int * id * pos * value
+  | DLow  of int * id * pos * value
 
 type result = ownership list
 
@@ -45,4 +50,3 @@ and print_ownership oc ownership =
      output_string oc (string_of_int i);
      output_string oc "\n")
   | _ -> raise Z3Syntax2Error
-    

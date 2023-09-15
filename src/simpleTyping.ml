@@ -1,3 +1,4 @@
+(** Molude for type inference of simple types *)
 open Syntax
 open TySyntax
 open TyConstraintSolver

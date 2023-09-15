@@ -1,3 +1,5 @@
+(** Simple elaborator for the AST using type information *)
+
 open Syntax
 open TySyntax
 open SimpleTyping

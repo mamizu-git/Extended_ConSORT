@@ -1,7 +1,9 @@
+(** Translator from Syntax.exp to Syntax.chc *)
+
 open Syntax
 open TySyntax
 open SimpleTyping
-open Elim
+open Util
 
 exception ConstrError
 
