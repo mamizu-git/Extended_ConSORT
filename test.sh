@@ -1,4 +1,5 @@
 #! /bin/bash
+time -p {
 Z3=z3
 HOICE=hoice
 i=1
@@ -23,3 +24,4 @@ $HOICE experiment/out_chc.smt2 > experiment/chc_result
 st2=`head -n 1 experiment/chc_result` 
 echo "refinement: $st2"
 echo ""
+}
