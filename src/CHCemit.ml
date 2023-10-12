@@ -2,7 +2,7 @@ open Syntax
 open CHCcollectConstraint
 open TySyntax
 open SimpleTyping
-open Elim
+open Util
 
 let id_count_chc = ref []
 

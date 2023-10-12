@@ -2,7 +2,7 @@ open Syntax
 open CollectConstraint
 open TySyntax
 open SimpleTyping
-open Elim
+open Util
 
 let id_count = ref []
 
