@@ -36,7 +36,6 @@ init_x(n, x, p)
     let q = p + 1 in
     let m = n - 1 in
     let d = init_x(m, x, q) in
-    alias(q = p + 1);
     1
   }
 }
