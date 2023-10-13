@@ -342,7 +342,7 @@ let rec print_exp exp =
     (print_string ("EAliasAddPtr(" ^ id1 ^ ", ");
      print_string id2;
      print_string ", ";
-     print_exp exp;
+     print_exp i;
      print_string ", ";
      print_exp e;
      print_string ")")

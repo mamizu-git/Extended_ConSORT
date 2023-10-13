@@ -3,6 +3,7 @@ open TySyntax
 open TyConstraintSolver
 open SimpleTyping
 open Convert
+open InsertAlias
 open CollectConstraint
 open Emit
 open Z3Syntax
@@ -39,7 +40,7 @@ let main_int file iter =
   (* print_program prog; print_newline (); print_newline (); *)
   infer_prog prog;
   (* print_all_tyenv !all_tyenv; print_newline (); print_newline (); *)
-  let prog' = convert prog in
+  let prog' = InsertAlias.f (convert prog) in
   (* print_program prog'; print_newline (); print_newline (); *)
   let all_cs = collect_prog prog' in 
   (* print_all_constraints all_cs; print_newline (); print_newline (); *)
@@ -78,7 +79,7 @@ let main_fv file =
   (* print_program prog; print_newline (); print_newline (); *)
   infer_prog prog;
   (* print_all_tyenv !all_tyenv; print_newline (); print_newline (); *)
-  let prog' = convert prog in
+  let prog' = InsertAlias.f (convert prog) in
   (* print_program prog'; print_newline (); print_newline (); *)
   let all_cs = collect_prog prog' in 
   (* print_all_constraints all_cs; print_newline (); print_newline (); *)
@@ -152,7 +153,7 @@ let main_chc file =
   (* print_program prog; print_newline (); print_newline (); *)
   infer_prog prog;
   (* print_all_tyenv !all_tyenv; print_newline (); print_newline (); *)
-  let prog' = convert prog in
+  let prog' = InsertAlias.f (convert prog) in
   (* print_program prog'; print_newline (); print_newline (); *)
   let all_chcs = chc_collect_prog prog' in 
   (* print_all_chcs all_chcs; print_newline (); print_newline (); *)
