@@ -1,3 +1,4 @@
+open TySyntax
 exception Error
 
 type id = string
@@ -122,89 +123,89 @@ let rec print_ids ids =
   | id :: [] -> print_string id
   | id :: ids' -> print_string (id ^ ", "); print_ids ids'
 
-let rec print_smtlib oc sl bool_id n num = 
+let rec print_smtlib oc sl bool_id map num = 
   match sl with 
   | Or (s1,s2) -> 
     (output_string oc "(or ";
-     print_smtlib oc s1 bool_id n num;
+     print_smtlib oc s1 bool_id map num;
      output_string oc " ";
-     print_smtlib oc s2 bool_id n num;
+     print_smtlib oc s2 bool_id map num;
      output_string oc ")")
   | And (s1,s2) -> 
     (output_string oc "(and ";
-     print_smtlib oc s1 bool_id n num;
+     print_smtlib oc s1 bool_id map num;
      output_string oc " ";
-     print_smtlib oc s2 bool_id n num;
+     print_smtlib oc s2 bool_id map num;
      output_string oc ")")
   | Imply (s1,s2) -> 
     (output_string oc "(=> ";
-     print_smtlib oc s1 bool_id n num;
+     print_smtlib oc s1 bool_id map num;
      output_string oc " ";
-     print_smtlib oc s2 bool_id n num;
+     print_smtlib oc s2 bool_id map num;
      output_string oc ")")
   | Not s -> 
     (output_string oc "(not ";
-     print_smtlib oc s bool_id n num;
+     print_smtlib oc s bool_id map num;
      output_string oc ")")
   | Eq (s1,s2) -> 
     (output_string oc "(= ";
-     print_smtlib oc s1 bool_id n num;
+     print_smtlib oc s1 bool_id map num;
      output_string oc " ";
-     print_smtlib oc s2 bool_id n num;
+     print_smtlib oc s2 bool_id map num;
      output_string oc ")")
   | Lt (s1,s2) -> 
     (output_string oc "(< ";
-     print_smtlib oc s1 bool_id n num;
+     print_smtlib oc s1 bool_id map num;
      output_string oc " ";
-     print_smtlib oc s2 bool_id n num;
+     print_smtlib oc s2 bool_id map num;
      output_string oc ")")
   | Gt (s1,s2) -> 
     (output_string oc "(> ";
-     print_smtlib oc s1 bool_id n num;
+     print_smtlib oc s1 bool_id map num;
      output_string oc " ";
-     print_smtlib oc s2 bool_id n num;
+     print_smtlib oc s2 bool_id map num;
      output_string oc ")")
   | Leq (s1,s2) -> 
     (output_string oc "(<= ";
-     print_smtlib oc s1 bool_id n num;
+     print_smtlib oc s1 bool_id map num;
      output_string oc " ";
-     print_smtlib oc s2 bool_id n num;
+     print_smtlib oc s2 bool_id map num;
      output_string oc ")")
   | Geq (s1,s2) -> 
     (output_string oc "(>= ";
-     print_smtlib oc s1 bool_id n num;
+     print_smtlib oc s1 bool_id map num;
      output_string oc " ";
-     print_smtlib oc s2 bool_id n num;
+     print_smtlib oc s2 bool_id map num;
      output_string oc ")")
   | Add (s1,s2) -> 
     (output_string oc "(+ ";
-     print_smtlib oc s1 bool_id n num;
+     print_smtlib oc s1 bool_id map num;
      output_string oc " ";
-     print_smtlib oc s2 bool_id n num;
+     print_smtlib oc s2 bool_id map num;
      output_string oc ")")
   | Sub (s1,s2) -> 
     (output_string oc "(- ";
-     print_smtlib oc s1 bool_id n num;
+     print_smtlib oc s1 bool_id map num;
      output_string oc " ";
-     print_smtlib oc s2 bool_id n num;
+     print_smtlib oc s2 bool_id map num;
      output_string oc ")")
   | Mul (s1,s2) -> 
     (output_string oc "(* ";
-     print_smtlib oc s1 bool_id n num;
+     print_smtlib oc s1 bool_id map num;
      output_string oc " ";
-     print_smtlib oc s2 bool_id n num;
+     print_smtlib oc s2 bool_id map num;
      output_string oc ")")
   | Div (s1,s2) -> 
     (output_string oc "(div ";
-     print_smtlib oc s1 bool_id n num;
+     print_smtlib oc s1 bool_id map num;
      output_string oc " ";
-     print_smtlib oc s2 bool_id n num;
+     print_smtlib oc s2 bool_id map num;
      output_string oc ")")
   | FV fv -> 
-    if bool_id then
-      output_string oc fv
-    else
+    (try
+      let n = lookup fv map in
       output_string oc (string_of_int n)
+    with Unbound -> output_string oc fv)
   | Id id -> output_string oc id
   | IntPred (id1,ids) -> 
     (output_string oc ("(P" ^ string_of_int num ^ "_" ^ id1);
@@ -220,28 +221,28 @@ let rec print_smtlib oc sl bool_id n num =
     output_string oc ")")
   | PtrPred (id,l,i_sl,n_sl) -> 
     (output_string oc ("(P" ^ (string_of_int num) ^ "_" ^ id ^ "_" ^ l ^ " ");
-     print_smtlib oc i_sl bool_id n num;
+     print_smtlib oc i_sl bool_id map num;
      output_string oc " v ";
-     print_smtlib oc n_sl bool_id n num;
+     print_smtlib oc n_sl bool_id map num;
      output_string oc ")")
   | PtrVarPred (num',id,be,i_sl,n_sl) -> 
     (output_string oc ("(P" ^ (string_of_int num') ^ "_" ^ id ^ "_" ^ be ^ " ");
-     print_smtlib oc i_sl bool_id n num;
+     print_smtlib oc i_sl bool_id map num;
      output_string oc " v ";
-     print_smtlib oc n_sl bool_id n num;
+     print_smtlib oc n_sl bool_id map num;
      output_string oc ")")
   | VarPred ->
     output_string oc "Pvar"
   | Ands sls -> 
     match sls with
     | [] -> output_string oc "true"
-    | sl :: [] -> print_smtlib oc sl bool_id n num
+    | sl :: [] -> print_smtlib oc sl bool_id map num
     | _ -> 
       (output_string oc "(and";
        List.iter 
          (fun sl ->
             output_string oc " ";
-            print_smtlib oc sl bool_id n num) sls;
+            print_smtlib oc sl bool_id map num) sls;
        output_string oc ")")
 
 let rec print_exp exp =
@@ -466,7 +467,7 @@ let rec print_ftype ft =
   match ft with
   | FTInt sl -> 
     (print_string "FTInt(";
-     print_smtlib stdout sl true 0 0;
+     print_smtlib stdout sl true [] 0;
      print_string ")");
   | FTRef (ft',e1,e2,f) ->
     (print_string "FTRef(";
@@ -666,26 +667,39 @@ let rec print_smtlibs oc sls bool_id fvs num iter =
         ) sls;
     output_string oc "\n") *)
   else 
-    (for ii = -iter to iter do
-      List.iter 
-      (fun sl -> 
-        output_string oc "(assert ";
-        print_smtlib oc sl false ii num; 
-        output_string oc ")\n"
-        ) sls;
-      output_string oc "\n";
-      done)
+    let rec range m n =
+      if m > n then []
+      else m :: range (m + 1) n
+    in
+    let rec generate_combinations fvs int_range =
+      match fvs with
+      | [] -> [[]]
+      | hd :: tl ->
+        let combinations_hd = List.map (fun x -> (hd, x)) int_range in
+        let combinations_tl = generate_combinations tl int_range in
+        List.flatten (List.map (fun a -> List.map (fun b -> a :: b) combinations_tl) combinations_hd)
+    in
+    let comb = generate_combinations fvs (range (-iter) iter) in
+    List.iter
+      (fun map ->
+        (List.iter 
+          (fun sl -> 
+            output_string oc "(assert ";
+            print_smtlib oc sl false map num; 
+            output_string oc ")\n"
+            ) sls;
+          output_string oc "\n")) comb
 and print_smtlibs_sub oc num sl = 
   let fvs = list_to_set (fvs_of_smtlib sl) [] in
   if fvs = [] then
     (output_string oc "(assert ";
-     print_smtlib oc sl true 0 num; 
+     print_smtlib oc sl true [] num; 
      output_string oc ")\n")
   else 
     (output_string oc "(assert (forall (";
      output_string oc (make_args fvs);
      output_string oc ") ";
-     print_smtlib oc sl true 0 num; 
+     print_smtlib oc sl true [] num; 
      output_string oc "))\n")
 and make_args fvs = 
   match fvs with

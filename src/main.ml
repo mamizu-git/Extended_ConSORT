@@ -16,20 +16,20 @@ let rec main_int_sub_declare oc all_cs bool_id n iter =
   if n < 0 then 
     ()
   else
-    (let (id_count, varown_count, fvs, sls) = all_cs_to_smtlib all_cs n in
+    (let (id_count, varown_count, fvs, sls) = all_cs_to_smtlib all_cs false n in
     print_declare oc id_count fvs n;
     print_declare_varown oc varown_count fvs n;
     output_string oc "\n";
     main_int_sub_declare oc all_cs bool_id (n-1) iter)
 
-let rec main_int_sub oc all_cs bool_id n iter = 
+let rec main_int_sub oc all_cs bool_id flag n iter = 
   if n < 0 then 
     ()
   else
-    (let (id_count, varown_count, fvs, sls) = all_cs_to_smtlib all_cs n in
+    (let (id_count, varown_count, fvs, sls) = all_cs_to_smtlib all_cs flag n in
     print_smtlibs oc sls bool_id fvs (-1) iter; 
     output_string oc "\n\n";
-    main_int_sub oc all_cs bool_id (n-1) iter)
+    main_int_sub oc all_cs bool_id flag (n-1) iter)
 
 let main_int file iter = 
   let oc_r1 = open_in file in
@@ -47,17 +47,17 @@ let main_int file iter =
 
   let oc1 = open_out "experiment/out_int.smt2" in
   main_int_sub_declare oc1 all_cs false n iter;
-  main_int_sub oc1 all_cs false n iter;
+  main_int_sub oc1 all_cs false false n iter;
   output_string oc1 "(check-sat)\n";
   output_string oc1 "(get-model)\n";
-  close_out oc1
+  close_out oc1;
 
-  (* let oc2 = open_out "experiment/out_fv_pre.smt2" in
+  let oc2 = open_out "experiment/out_fv_pre.smt2" in
   main_int_sub_declare oc2 all_cs true n iter;
-  main_int_sub oc2 all_cs true n iter;
+  main_int_sub oc2 all_cs true false n iter;
   output_string oc2 "(check-sat)\n";
   output_string oc2 "(get-model)\n";
-  close_out oc2; *)
+  close_out oc2
 
   (* let oc3 = open_out "experiment/out_int2.smt2" in
   main_int_sub_declare oc3 all_cs false n iter;
@@ -87,7 +87,7 @@ let main_fv file =
   let oc = open_out "experiment/out_fv.smt2" in
   (* let oc2 = open_out "experiment/out_fv2.smt2" in *)
   main_int_sub_declare oc all_cs true n 0;
-  main_int_sub oc all_cs true n 0;
+  main_int_sub oc all_cs true false n 0;
   print_z3result oc z3res;
   output_string oc "\n\n";
   output_string oc "(check-sat)\n";

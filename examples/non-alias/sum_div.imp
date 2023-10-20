@@ -1,0 +1,64 @@
+sum(n, m, p) 
+[ <#n: int, #m: int, p: int ref> -> 
+  <#n: int, #m: int, p: int ref | int> ]
+{
+  if n < m then {
+    0
+  } else {
+    if m <= 0 then {
+      0
+    } else {
+        let x = *p in
+        if n = 1 then {
+        x
+      } else {
+        let p1 = p + m in
+        let m2 = m / 2 in
+        let s1 = sum(m, m2, p) in
+        let k = n - m in
+        let k2 = k / 2 in
+        let s2 = sum(k, k2, p1) in
+        let z = s1 + s2 in
+        z
+      } 
+    }
+  }
+}
+
+abs(m)
+[ <#m: int> -> <#m: int | int> ]
+{
+  if m >= 0 then {
+    m
+  } else {
+    let k = -m in
+    k
+  }
+}
+
+init_x(n, x, p) 
+[ <#n: int, x: int, p: int ref> -> 
+  <#n: int, x: int, p: int ref | int> ]
+{
+  if n <= 0 then {
+    1
+  } else {
+    p := x;
+    let q = p + 1 in
+    let m = n - 1 in
+    let d = init_x(m, x, q) in
+    1
+  }
+}
+
+{
+  let p = mkarray 1000 in
+  let m = 1000 in
+  let rand = _ in
+  let z = abs(rand) in
+  let d = init_x(m, z, p) in
+  let m2 = 500 in
+  let x = sum(m, m2, p) in
+  assert(x >= 0);
+  ()
+}

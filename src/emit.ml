@@ -453,11 +453,17 @@ let rec fun_number all_cs cnt res =
     let (id,_) = ics in
     fun_number all_cs' (cnt+1) ((id, cnt) :: res)
 
-let all_cs_to_smtlib all_cs n =
+let all_cs_to_smtlib all_cs flag n =
   (* List.concat (List.map ics_to_smtlib all_cs) *)
   let fun_num = fun_number all_cs 0 [] in
   let (ss, id_count, varown_count, fvs) = ics_to_smtlib (List.nth all_cs n) n fun_num in
   (* print_declare id_count fvs; *)
-  (id_count, varown_count, fvs, ss)
+  let ss' = 
+    if flag then 
+      [Not(Ands ss)]
+    else
+      ss
+  in
+  (id_count, varown_count, fvs, ss')
   
     
