@@ -3,7 +3,9 @@ Z3=z3
 HOICE=hoice
 i=0
 j=3
-rm -f experiment/*
+rm -f experiment/*result
+rm -f experiment/result*
+rm -f experiment/*.smt2
 while true
 do
 	i=$(($i+1))
