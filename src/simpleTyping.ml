@@ -87,12 +87,12 @@ let rec infer_exp tyenv exp =
     let (t,c) = infer_exp tyenv e in
     (TyBool, (t, TyBool) :: c)
   | EAdd (e1,e2) ->
-    let (t1,c1) = infer_exp tyenv e1 in (* Int or Array *)
+    let (t1,c1) = infer_exp tyenv e1 in 
     let (t2,c2) = infer_exp tyenv e2 in
     let a = new_tyvar () in
     (TyVar a, (t1, TyVar a) :: (t2, TyInt) :: c1 @ c2)
   | ESub (e1,e2) ->
-    let (t1,c1) = infer_exp tyenv e1 in (* Int or Array *)
+    let (t1,c1) = infer_exp tyenv e1 in 
     let (t2,c2) = infer_exp tyenv e2 in
     let a = new_tyvar () in
     (TyVar a, (t1, TyVar a) :: (t2, TyInt) :: c1 @ c2)

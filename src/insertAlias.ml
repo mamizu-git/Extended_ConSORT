@@ -35,7 +35,7 @@ let rec insert_alias exp =
     let alias e' = EAliasAddPtr(id1,id2,e1,e') in 
     ELetAddPtr(id1, id2, e1, insert_sub alias (insert_alias e2))
   | ELetSubPtr (id1,id2,e1,e2) -> 
-    let alias e' = EAliasAddPtr(id2,id1,e1,e') in (**)
+    let alias e' = EAliasAddPtr(id2,id1,e1,e') in 
     ELetSubPtr(id1, id2, e1, insert_sub alias (insert_alias e2)) 
   | ELet (id,e1,e2) -> ELet (id, insert_alias e1, insert_alias e2)
   | ELetInt(id,e1,e2) -> ELetInt (id, insert_alias e1, insert_alias e2)

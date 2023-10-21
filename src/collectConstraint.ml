@@ -10,7 +10,7 @@ let fn_env : (id * ((ftype_id * ftype) list * (ftype_id * ftype) list)) list ref
 let rec collect_exp env f_id args l exp =
   match exp with
   | EIf (e1,e2,e3) ->
-    let c1 = collect_exp env f_id args l e1 in (* needless? *)
+    let c1 = collect_exp env f_id args l e1 in 
     let c2 = collect_exp env f_id args (l+1) e2 in
     let c3 = collect_exp env f_id args (l+1) e3 in
     let e1' = elim_v env f_id args e1 in
