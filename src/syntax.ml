@@ -1,4 +1,7 @@
+(** Data structures for describing the target language and the SMT-LIB language  *)
+
 open TySyntax
+
 exception Error
 
 type id = string
@@ -6,6 +9,7 @@ type pos = int
 
 let intpred_env : (id * id list) list ref = ref []
 
+(** Type representing the syntax of the SMT-LIB language *)
 type smtlib = 
   | Or of smtlib * smtlib
   | And of smtlib * smtlib
@@ -29,6 +33,7 @@ type smtlib =
   | VarPred
   | Ands of smtlib list
 
+(** Type representing the syntax of the target language described in Section 2 *)
 type exp = 
   | ELet of id * exp * exp
   | ELetInt of id * exp * exp
@@ -71,9 +76,10 @@ type exp =
   | EVar of id
   | ENull
 
-type ftype = 
-  | FTInt of smtlib
-  | FTRef of ftype * exp * exp * float 
+(** Type representing the types for the target language described in Section 2 *)
+type ftype =
+  | FTInt of smtlib (** Refinement predicats are described usign the SMT-LIB language *)
+  | FTRef of ftype * exp * exp * float  (** Ownership functions are restricted to the form \[l, u\] |-> o, where l : exp, u : exp and o : float *)
 
 type ftype_id =
   | RawId of id
@@ -83,11 +89,12 @@ type annotation = (ftype_id * ftype) list * (ftype_id * ftype) list * ftype
 type fdef = id * id list * annotation * exp
 type program = fdef list * exp
 
+(** AST with position information used for ownership inference *)
 type constr = 
   | CIf of exp * constr list * constr list * pos
   | CLet of id * id * pos
   | CLetDeref of id * id * pos
-  | CLetAddPtr of id * id * exp * pos 
+  | CLetAddPtr of id * id * exp * pos
   | CLetSubPtr of id * id * exp * pos
   | CMkArray of id * int * pos
   | CAssignInt of id * pos
@@ -101,12 +108,13 @@ and arg =
   | AExp of exp
   | AId of id
 
+(** AST with position information used for refienment inference *)
 type chc = 
   | CHCIf of exp * chc list * chc list * pos
   | CHCLetInt of id * exp * pos
   | CHCLet of id * id * pos
   | CHCLetDeref of id * id * pos
-  | CHCLetAddPtr of id * id * exp * pos 
+  | CHCLetAddPtr of id * id * exp * pos
   | CHCLetSubPtr of id * id * exp * pos
   | CHCMkArray of id * int * pos
   | CHCAssignInt of id * exp * pos

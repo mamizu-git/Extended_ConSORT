@@ -1,3 +1,5 @@
+(** Module for ownership constraint generation *)
+
 open Syntax
 open CollectConstraint
 open TySyntax
@@ -92,6 +94,7 @@ let rec union_list ls1 ls2 =
   | [] -> ls2
   | x :: ls1' -> if List.mem x ls2 then union_list ls1' ls2 else union_list ls1' (x :: ls2)
 
+(** Main procedure for generating the ownership constraints *)
 let rec constr_to_smtlib fvs n fun_num ifel c =
   match c with
   | CIf (e,cs1,cs2,l) -> 
@@ -149,7 +152,7 @@ let rec constr_to_smtlib fvs n fun_num ifel c =
      Geq(hi_p fvs id2 n ifel, hi fvs id2 n ifel);
      Leq(lo fvs id1 n ifel, hi fvs id1 n ifel);
      Leq(lo fvs id2 n ifel, hi fvs id2 n ifel)] 
-  | CLetAddPtr (id1,id2,e,l) -> 
+  | CLetAddPtr (id1,id2,e,l) ->  (* Corresponds to the example on p.15 *)
     new_id id1 l ifel; new_id id2 l ifel;
     let sl = exp_to_smtlib e in
     [Or(Geq(o_p id2 n ifel, Add(o id1 n ifel, o id2 n ifel)),
@@ -178,7 +181,7 @@ let rec constr_to_smtlib fvs n fun_num ifel c =
     [Eq(o id n ifel, Id "1"); 
      Eq(lo fvs id n ifel, Id "0"); 
      Eq(hi fvs id n ifel, Id (string_of_int (i-1)))]
-  | CAssignInt (id,l) -> 
+  | CAssignInt (id,l) -> (* Corresponds to the example on p.14 *)
     [Eq(o id n ifel, Id "1");
      Leq(lo fvs id n ifel, Id "0"); 
      Geq(hi fvs id n ifel, Id "0")]

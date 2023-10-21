@@ -1,3 +1,5 @@
+(** Unifier for the simple type inference *)
+
 open TySyntax
 
 exception TyError

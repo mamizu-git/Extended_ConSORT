@@ -1,3 +1,5 @@
+(** Main module *)
+
 open Syntax
 open TySyntax
 open TyConstraintSolver
@@ -31,6 +33,8 @@ let rec main_int_sub oc all_cs bool_id flag n iter =
     output_string oc "\n\n";
     main_int_sub oc all_cs bool_id flag (n-1) iter)
 
+(** First phase of the ownershipip inference:
+    Generates n_1, ..., n_k and checks the validity of \exists y . phi(n_1, y) /\ ... /\ phi(n_k, y) *)
 let main_int file iter = 
   let oc_r1 = open_in file in
   let prog = Parser.program Lexer.read (Lexing.from_channel oc_r1) in
@@ -56,6 +60,8 @@ let main_int file iter =
   close_out oc2
 
 
+(** Second phase of the ownershipip inference:
+    Checks the validity of \forall x phi(x, a), where a is the witeness for \exist y obtasined in the first phase. *)
 let main_fv file =
   let oc_r1 = open_in file  in
   let oc_r2 = open_in "experiment/result_int" in
@@ -114,6 +120,7 @@ let rec main_chc_sub oc all_chcs n =
     output_string oc "\n\n";
     main_chc_sub oc all_chcs (n-1))
 
+(** Main procedure for the refinement inference *)
 let main_chc file =
   let oc_r1 = open_in file  in
   let prog = Parser.program Lexer.read (Lexing.from_channel oc_r1) in

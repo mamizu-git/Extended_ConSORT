@@ -1,3 +1,5 @@
+(** Module for inserting alias based on pointer arithmetics *)
+
 open Syntax
 open TySyntax
 open SimpleTyping
