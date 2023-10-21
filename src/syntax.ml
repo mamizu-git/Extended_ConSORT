@@ -24,8 +24,8 @@ type smtlib =
   | Id of id
   | IntPred of id * id list
   | IntVarPred of int * id * id list
-  | PtrPred of id * id * smtlib * smtlib
-  | PtrVarPred of int * id * id * smtlib * smtlib
+  | PtrPred of id * id * smtlib * id list
+  | PtrVarPred of int * id * id * smtlib * id list
   | VarPred
   | Ands of smtlib list
 
@@ -219,17 +219,21 @@ let rec print_smtlib oc sl bool_id map num =
        (fun id -> 
           output_string oc (" " ^ id)) ids;
     output_string oc ")")
-  | PtrPred (id,l,i_sl,n_sl) -> 
+  | PtrPred (id,l,i_sl,ids) -> 
     (output_string oc ("(P" ^ (string_of_int num) ^ "_" ^ id ^ "_" ^ l ^ " ");
      print_smtlib oc i_sl bool_id map num;
-     output_string oc " v ";
-     print_smtlib oc n_sl bool_id map num;
+     output_string oc " v";
+     List.iter
+       (fun id -> 
+          output_string oc (" " ^ id)) ids;
      output_string oc ")")
-  | PtrVarPred (num',id,be,i_sl,n_sl) -> 
+  | PtrVarPred (num',id,be,i_sl,ids) -> 
     (output_string oc ("(P" ^ (string_of_int num') ^ "_" ^ id ^ "_" ^ be ^ " ");
      print_smtlib oc i_sl bool_id map num;
-     output_string oc " v ";
-     print_smtlib oc n_sl bool_id map num;
+     output_string oc " v";
+     List.iter
+       (fun id -> 
+          output_string oc (" " ^ id)) ids;
      output_string oc ")")
   | VarPred ->
     output_string oc "Pvar"
@@ -742,10 +746,10 @@ and fvs_of_smtlib sl =
     ids
   | IntVarPred (num,id1,ids) ->
     ids
-  | PtrPred (id,l,s1,s2) ->
-    "v" :: (fvs_of_smtlib s1) @ (fvs_of_smtlib s2) (**)
-  | PtrVarPred (num,id1,id2,s1,s2) ->
-    "v" :: (fvs_of_smtlib s1) @ (fvs_of_smtlib s2) (**)
+  | PtrPred (id,l,s1,fvs) ->
+    "v" :: (fvs_of_smtlib s1) @ fvs (**)
+  | PtrVarPred (num,id1,id2,s1,fvs) ->
+    "v" :: (fvs_of_smtlib s1) @ fvs (**)
   | VarPred ->
     []
   | Ands ss ->
@@ -810,18 +814,20 @@ let print_declare_chc_int oc intpred_env num =
        output_string oc (") Bool)\n")
        ) intpred_set
 
-let print_declare_chc oc id_count num =
+let print_declare_chc oc id_count fvs num =
   List.iter
     (fun (id,(i,ifel)) ->
        try 
-         let fvs = List.assoc id !intpred_env in
+         let fvs' = List.assoc id !intpred_env in
          output_string oc ("(declare-fun P" ^ string_of_int num ^ "_" ^ id ^ " ( Int ");
-         List.iter (fun _ -> output_string oc "Int ") fvs;
+         List.iter (fun _ -> output_string oc "Int ") fvs';
          output_string oc (") Bool)\n")
        with Not_found -> 
          output_string oc ("(declare-fun P" ^ string_of_int num ^ "_" ^ id ^ "_");
          output_string oc (string_of_int i ^ ifel_to_str ifel);
-         output_string oc " ( Int Int Int ) Bool)\n"
+         output_string oc " ( Int Int ";
+         List.iter (fun _ -> output_string oc "Int ") fvs;
+         output_string oc ") Bool)\n"
        ) id_count
 
 let print_declare_varpred oc varpred_count num =
@@ -835,10 +841,12 @@ let print_declare_varpred oc varpred_count num =
             List.iter (fun _ -> output_string oc "Int ") fvs;
             output_string oc (") Bool)\n"))
           else ()
-        | PtrVarPred(num',id,be,_,_) -> 
+        | PtrVarPred(num',id,be,_,fvs) -> 
           if num' = num then 
             (output_string oc ("(declare-fun P" ^ string_of_int num ^ "_" ^ id ^ "_" ^ be);
-            output_string oc " ( Int Int Int ) Bool)\n")
+          output_string oc " ( Int Int ";
+          List.iter (fun _ -> output_string oc "Int ") fvs;
+          output_string oc (") Bool)\n"))
           else ()
          ) (list_to_set (List.map fst varpred_count) [])
 

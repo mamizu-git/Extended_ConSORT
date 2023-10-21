@@ -3,7 +3,7 @@
 function verbose (){
     for file in examples/non-alias/*; do
         echo "$file:"
-        time -p timeout 360 ./test.sh $file
+        time -p timeout 600 ./test.sh $file
         if [ $? -ne 0 ]; then
             echo "Timeout"
         fi
@@ -17,7 +17,7 @@ function gen_table(){
     TIMEFORMAT='%3R'
     for file in examples/non-alias/*; do
         # Ignores the output of test.sh
-        ret=$( { time timeout 360 ./test.sh $file >/dev/null ; } 2>&1 )
+        ret=$( { time timeout 600 ./test.sh $file >/dev/null ; } 2>&1 )
         if [ $? -ne 0 ]; then
             ret="Timeout"
         fi

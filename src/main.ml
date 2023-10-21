@@ -114,10 +114,10 @@ let rec main_chc_sub_declare oc all_chcs n =
     
     let (id_count, varpred_count, fvs, sls) = all_cs_to_smtlib_chc all_chcs n in
     let args_own_sls = ownexp_to_ownchc varpred_count n in
-    let own_sls = collect_ownchc z3res n in 
+    let own_sls = collect_ownchc z3res n fvs in 
 
     print_declare_chc_int oc !intpred_env n;
-    print_declare_chc oc id_count n;
+    print_declare_chc oc id_count fvs n;
     print_declare_varpred oc varpred_count n;
     output_string oc "\n";
     main_chc_sub_declare oc all_chcs (n-1))
@@ -133,7 +133,7 @@ let rec main_chc_sub oc all_chcs n =
     
     let (id_count, varpred_count, fvs, sls) = all_cs_to_smtlib_chc all_chcs n in
     let args_own_sls = ownexp_to_ownchc varpred_count n in
-    let own_sls = collect_ownchc z3res n in 
+    let own_sls = collect_ownchc z3res n fvs in 
 
     print_smtlibs oc sls true fvs n 0; 
     output_string oc "\n";
